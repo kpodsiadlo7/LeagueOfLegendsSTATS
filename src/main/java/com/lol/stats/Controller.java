@@ -6,7 +6,8 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 
 @RestController
-@CrossOrigin(origins = "http://127.0.0.1:3000")
+//@CrossOrigin(origins = "https://kpodsiadlo7.github.io")
+    @CrossOrigin(origins = "http://127.0.0.1:3000/")
 class Controller {
 
     private final RiotFacade riotFacade;
@@ -30,6 +31,11 @@ class Controller {
             @RequestParam String summonerName,
             @RequestParam int count) throws IOException, InterruptedException {
         return riotFacade.getAllSummonerMatchesByName(summonerName,count);
+    }
+
+    @GetMapping("/matchInfo")
+    JsonNode getMatchInfoBySummonerName(@RequestParam String summonerName){
+        return riotFacade.getInfoAboutAllSummonerInActiveGame(summonerName);
     }
 
     @GetMapping("/match")

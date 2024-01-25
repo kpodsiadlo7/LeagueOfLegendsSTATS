@@ -1,6 +1,8 @@
 package com.lol.stats;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -10,7 +12,7 @@ import static java.lang.Thread.sleep;
 
 @Service
 class RiotFacade {
-    private final FeignRiotSummonerInfo feignRiotSummonerInfo;
+    private final FeignRiotSummonerInfoEUN1 feignRiotSummonerInfoEUN1;
     private final FeignRiotAllChampion feignRiotAllChampion;
     private final FeignRiotMatches feignRiotMatches;
 
@@ -23,8 +25,8 @@ class RiotFacade {
     private String ICON_URL;
 
 
-    RiotFacade(FeignRiotSummonerInfo feignRiotSummonerInfo, FeignRiotAllChampion feignRiotAllChampion, FeignRiotMatches feignRiotMatches, FeignLolVersion feignLolVersion) {
-        this.feignRiotSummonerInfo = feignRiotSummonerInfo;
+    RiotFacade(FeignRiotSummonerInfoEUN1 feignRiotSummonerInfoEUN1, FeignRiotAllChampion feignRiotAllChampion, FeignRiotMatches feignRiotMatches, FeignLolVersion feignLolVersion) {
+        this.feignRiotSummonerInfoEUN1 = feignRiotSummonerInfoEUN1;
         this.feignRiotAllChampion = feignRiotAllChampion;
         this.feignRiotMatches = feignRiotMatches;
         this.feignLolVersion = feignLolVersion;
@@ -32,12 +34,11 @@ class RiotFacade {
 
     JsonNode getSummonerInfoByName(final String summonerName) throws InterruptedException {
         ObjectNode summonerInfo = (ObjectNode) getSummonerInfo(summonerName);
-        String latestLolVersion = getLatestRiotVersion();
 
         String rank = getSummonerRank(summonerInfo.get("id").asText());
         summonerInfo.put("rank", rank);
 
-        JsonNode championsInfo = feignRiotSummonerInfo.getMainChampions(summonerInfo.get("puuid").asText());
+        JsonNode championsInfo = feignRiotSummonerInfoEUN1.getMainChampions(summonerInfo.get("puuid").asText());
         setThreeMainChampions(summonerInfo, championsInfo);
 
         JsonNode matchesInfo = getAllSummonerMatchesByName(summonerName,50);
@@ -47,13 +48,17 @@ class RiotFacade {
         String rankColor = setRankColorDependsOnRank(rank);
         summonerInfo.put("rankColor", rankColor);
 
-        String iconUrl = ICON_URL+latestLolVersion+"/img/profileicon/"+summonerInfo.get("profileIconId").asText()+".png";
+        String iconUrl = getProfileIconUrl(summonerInfo.get("profileIconId").asText());
         summonerInfo.put("iconUrl", iconUrl);
 
         if(summonerName.equalsIgnoreCase("ziomekmasala"))
             summonerInfo.put("name", "ZiomekMasala");
 
         return summonerInfo;
+    }
+
+    private String getProfileIconUrl(String summonerIconId) {
+        return ICON_URL +  getLatestRiotVersion() + "/img/profileicon/" + summonerIconId + ".png";
     }
 
     private void setThreeLastMatches(ObjectNode summonerInfo, JsonNode matchesInfo) throws InterruptedException {
@@ -109,7 +114,7 @@ class RiotFacade {
     }
 
     private String getSummonerRank(final String id) {
-        JsonNode jsonNode = feignRiotSummonerInfo.getLeagueV4(id);
+        JsonNode jsonNode = feignRiotSummonerInfoEUN1.getLeagueV4(id);
         StringBuilder stringBuilder = new StringBuilder();
         for(JsonNode summoner: jsonNode) {
             if(summoner.get("queueType").asText().equals("RANKED_SOLO_5x5")) {
@@ -120,7 +125,7 @@ class RiotFacade {
                                 .asText()).toString();
             }
         }
-        return "BRAK";
+        return "BRAK RANGI";
     }
 
     private String setRankColorDependsOnRank(final String rank) {
@@ -132,9 +137,14 @@ class RiotFacade {
             return "#C0C0C0";
         } else if (lowerCaseRank.contains("platinum")) {
             return "#00CED1";
+        } else if (lowerCaseRank.contains("emerald")) {
+            return "#2ecc71";
+        } else if (lowerCaseRank.contains("diamond")) {
+            return "#00CED1";
         } else {
-            return "#000000";
+                return "#000000";
         }
+
         //TODO make cases for all ranks
     }
 
@@ -145,9 +155,9 @@ class RiotFacade {
     private JsonNode getSummonerInfo(String summonerName) {
         if(summonerName.equalsIgnoreCase("ziomekmasala")){
             System.out.println("pobrałem");
-            return feignRiotSummonerInfo.getSummonerByPuuid(MASALA_PUUID);
+            return feignRiotSummonerInfoEUN1.getSummonerByPuuid(MASALA_PUUID);
         }
-        return feignRiotSummonerInfo.getSummonerByName(summonerName);
+        return feignRiotSummonerInfoEUN1.getSummonerByName(summonerName);
     }
 
     String getChampionById(String championId) {
@@ -175,5 +185,52 @@ class RiotFacade {
 
     JsonNode getInfoAboutMatchById(String matchId) {
         return feignRiotMatches.getInfoAboutMatchById(matchId).get("info");
+    }
+
+    JsonNode getInfoAboutAllSummonerInActiveGame(String summonerName) {
+        System.out.println("getInfoAboutAllSummonerInActiveGame");
+        JsonNode summonerInfo = getSummonerInfo(summonerName);
+        JsonNode matchInfo = feignRiotSummonerInfoEUN1.getMatchInfoBySummonerId(summonerInfo.get("id").asText());
+        ObjectNode allInfoAboutMatch = JsonNodeFactory.instance.objectNode();
+        ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
+        ArrayNode bannedChampionsArray = JsonNodeFactory.instance.arrayNode();
+
+        if(!matchInfo.isEmpty() && !matchInfo.get("participants").isEmpty()) {
+            String userTeam = null;
+            for (JsonNode s : matchInfo.get("participants")) {
+                ObjectNode summoner = (ObjectNode) s;
+                String rank = getSummonerRank(s.get("summonerId").asText());
+                summoner.put("champName", getChampionById(s.get("championId").asText()));
+                summoner.put("rank", rank);
+                summoner.put("rankColor", setRankColorDependsOnRank(rank));
+                summoner.put("1spellName", getSpellNameBySpellId(s.get("spell1Id").asText()));
+                summoner.put("2spellName", getSpellNameBySpellId(s.get("spell2Id").asText()));
+                arrayNode.add(summoner);
+
+                if(s.get("summonerId").asText().equals(summonerInfo.get("id").asText()))
+                    userTeam = summoner.get("teamId").asText();
+            }
+            allInfoAboutMatch.put("summoners", arrayNode);
+
+            for(JsonNode champ: matchInfo.get("bannedChampions")){
+                bannedChampionsArray.add(getChampionById(champ.get("championId").asText()));
+            }
+
+            allInfoAboutMatch.put("bannedChampions",bannedChampionsArray);
+            allInfoAboutMatch.put("userTeam", userTeam);
+            allInfoAboutMatch.put("gameMode", matchInfo.get("gameMode"));
+        }
+        return allInfoAboutMatch;
+    }
+
+    private String getSpellNameBySpellId(String spellId) {
+        JsonNode summonerSpells = feignRiotAllChampion.getSummonerSpells(getLatestRiotVersion());
+
+        for (JsonNode n : summonerSpells.get("data")){
+            if(n.get("key").asText().equals(spellId)){
+                return n.get("name").asText();
+            }
+        }
+        return "X";
     }
 }

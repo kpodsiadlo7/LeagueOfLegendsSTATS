@@ -13,4 +13,7 @@ interface FeignRiotAllChampion {
 
     @GetMapping("/cdn/{latestVersion}/data/en_US/champion.json")
     JsonNode getChampionById(@PathVariable String latestVersion);
+
+    @GetMapping("/cdn/{latestVersion}/data/en_US/summoner.json")
+    JsonNode getSummonerSpells(@PathVariable String latestVersion);
 }
