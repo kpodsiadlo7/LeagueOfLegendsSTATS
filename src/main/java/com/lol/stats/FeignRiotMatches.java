@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(value = "RiotMatches", url = "https://europe.api.riotgames.com/lol/match/v5/matches/")
 interface FeignRiotMatches {
-    @GetMapping("by-puuid/{puuid}/ids?start=0&count={count}&api_key=${api.key}")
-    JsonNode getMatchesByPuuidAndCount(@PathVariable String puuid, @PathVariable int count);
+    @GetMapping("by-puuid/{puuid}/ids?start=0&count={count}&api_key={apiKey}")
+    JsonNode getMatchesByPuuidAndCount(@PathVariable String puuid, @PathVariable int count, @PathVariable final String apiKey);
 
-    @GetMapping("{matchId}?api_key=${api.key}")
-    JsonNode getInfoAboutMatchById(@PathVariable String matchId);
+    @GetMapping("{matchId}?api_key={apiKey}")
+    JsonNode getInfoAboutMatchById(@PathVariable String matchId, @PathVariable final String apiKey);
 }

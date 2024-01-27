@@ -47,4 +47,9 @@ class Controller {
     JsonNode getLast10MatchesBySummonerName(@RequestParam String summonerName) throws InterruptedException {
         return riotFacade.getLast10MatchesBySummonerName(summonerName);
     }
+
+    @GetMapping("/randomMatch")
+    JsonNode getRandomSummonerNameFromExistingGame(){
+        return riotFacade.getRandomSummonerNameFromExistingGame();
+    }
 }
