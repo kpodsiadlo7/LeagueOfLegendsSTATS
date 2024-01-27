@@ -20,9 +20,12 @@ interface FeignRiotSummonerInfoEUN1 {
     @GetMapping("/league/v4/entries/by-summoner/{summonerId}?api_key=${api.key}")
     JsonNode getLeagueV4(@PathVariable String summonerId);
 
-    @GetMapping("/champion-mastery/v4/champion-masteries/by-puuid/{puuId}/top?count=3&api_key=${api.key}")
+    @GetMapping("/champion-mastery/v4/champion-masteries/by-puuid/{puuId}/top?count=1&api_key=${api.key}")
     JsonNode getMainChampions(@PathVariable String puuId);
 
     @GetMapping("/spectator/v4/active-games/by-summoner/{summonerId}?api_key=${api.key}")
     JsonNode getMatchInfoBySummonerId(@PathVariable String summonerId);
+
+    @GetMapping("/league/v4/entries/by-summoner/{summonerId}?api_key=${api.key}")
+    JsonNode getLeagueInfoBySummonerId(@PathVariable String summonerId);
 }

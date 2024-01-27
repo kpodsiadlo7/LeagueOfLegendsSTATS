@@ -35,117 +35,136 @@ class RiotFacade {
     JsonNode getSummonerInfoByName(final String summonerName) throws InterruptedException {
         ObjectNode summonerInfo = (ObjectNode) getSummonerInfo(summonerName);
 
-        String rank = getSummonerRank(summonerInfo.get("id").asText());
-        summonerInfo.put("rank", rank);
+        ArrayNode rank = getSummonerRank(summonerInfo.get("id").asText());
+        summonerInfo.put("ranks", rank);
 
         JsonNode championsInfo = feignRiotSummonerInfoEUN1.getMainChampions(summonerInfo.get("puuid").asText());
-        setThreeMainChampions(summonerInfo, championsInfo);
-
-        JsonNode matchesInfo = getAllSummonerMatchesByName(summonerName,50);
-        setThreeLastMatches(summonerInfo,matchesInfo);
-        if(matchesInfo.isEmpty()) summonerInfo.put("win", "BRAK DANYCH");
-
-        String rankColor = setRankColorDependsOnRank(rank);
-        summonerInfo.put("rankColor", rankColor);
+        getMainChampion(summonerInfo, championsInfo);
+        setRanksForSoloAndFlex(rank, summonerInfo);
 
         String iconUrl = getProfileIconUrl(summonerInfo.get("profileIconId").asText());
         summonerInfo.put("iconUrl", iconUrl);
 
-        if(summonerName.equalsIgnoreCase("ziomekmasala"))
+        if (summonerName.equalsIgnoreCase("ziomekmasala"))
             summonerInfo.put("name", "ZiomekMasala");
 
         return summonerInfo;
     }
 
-    private String getProfileIconUrl(String summonerIconId) {
-        return ICON_URL +  getLatestRiotVersion() + "/img/profileicon/" + summonerIconId + ".png";
+    private void setRanksForSoloAndFlex(ArrayNode rank, ObjectNode summonerInfo) {
+        if (rank != null) {
+            for (JsonNode n : rank) {
+                if (n.get("rankFlex") != null && !n.get("rankFlex").isEmpty() &&
+                        n.get("rankFlex").get("queueType") != null && n.get("rankFlex").get("queueType").asText().equals("RANKED_FLEX_SR")) {
+                    summonerInfo.put("rankFlexColor", setRankColorDependsOnRank(n.get("rankFlex").get("tier").asText()));
+
+                } else if (n.get("rankSolo") != null && !n.get("rankSolo").isEmpty() &&
+                        n.get("rankSolo").get("queueType") != null && n.get("rankSolo").get("queueType").asText().equals("RANKED_SOLO_5x5")) {
+                    summonerInfo.put("rankSoloColor", setRankColorDependsOnRank(n.get("rankSolo").get("tier").asText()));
+                }
+            }
+        }
     }
 
-    private void setThreeLastMatches(ObjectNode summonerInfo, JsonNode matchesInfo) throws InterruptedException {
-        int matches = 1;
+    private String getProfileIconUrl(String summonerIconId) {
+        return ICON_URL + getLatestRiotVersion() + "/img/profileicon/" + summonerIconId + ".png";
+    }
+
+    private void getLastMatchesDependsOnCount(ObjectNode summonerInfo, JsonNode matchesInfo, int count) throws InterruptedException {
+        int matches = 0;
         int questions = 0;
+        ArrayNode matchesArray = JsonNodeFactory.instance.arrayNode();
+
         for (JsonNode singleMatch : matchesInfo) {
             JsonNode match = getInfoAboutMatchById(singleMatch.asText());
-               if(match.get("gameMode").asText().equals("CLASSIC")) {
+            if (match.get("gameMode").asText().equals("CLASSIC")) {
                 for (JsonNode m : match.get("participants")) {
-                    if(m.get("puuid").asText().equals(summonerInfo.get("puuid").asText())) {
-                        summonerInfo.put("matchChampName"+matches, m.get("championName"));
-                        summonerInfo.put("assists"+matches, m.get("assists"));
-                        summonerInfo.put("kda"+matches, m.get("challenges").get("kda"));
-                        summonerInfo.put("multikills"+matches, m.get("challenges").get("multikills"));
-                        summonerInfo.put("soloKills"+matches, m.get("challenges").get("soloKills"));
-                        summonerInfo.put("deaths"+matches, m.get("deaths"));
-                        summonerInfo.put("doubleKills"+matches, m.get("doubleKills"));
-                        summonerInfo.put("kills"+matches, m.get("kills"));
-                        summonerInfo.put("dealtDamage"+matches, m.get("totalDamageDealtToChampions"));
-                        summonerInfo.put("tripleKills"+matches, m.get("tripleKills"));
-                        summonerInfo.put("quadraKills"+matches, m.get("quadraKills"));
-                        summonerInfo.put("killingSprees"+matches, m.get("killingSprees"));
+                    if (m.get("puuid").asText().equals(summonerInfo.get("puuid").asText())) {
+                        ObjectNode temp = JsonNodeFactory.instance.objectNode();
+                        temp.put("matchChampName", m.get("championName"));
+                        temp.put("assists", m.get("assists"));
+                        temp.put("kda", m.get("challenges").get("kda"));
+                        temp.put("deaths", m.get("deaths"));
+                        temp.put("kills", m.get("kills"));
+                        temp.put("lane", m.get("teamPosition"));
+                        temp.put("dealtDamage", m.get("totalDamageDealtToChampions"));
                         switch (m.get("win").asText()) {
-                            case "true" -> summonerInfo
-                                    .put("win"+matches, "WYGRANA")
-                                    .put("winColor"+matches, "green");
+                            case "true" -> temp
+                                    .put("win", "WYGRANA")
+                                    .put("winColor", "green");
 
-                            case "false" -> summonerInfo
-                                    .put("win"+matches, "PRZEGRANA")
-                                    .put("winColor"+matches, "red");
+                            case "false" -> temp
+                                    .put("win", "PRZEGRANA")
+                                    .put("winColor", "red");
                         }
-                        summonerInfo.put("pentaKills"+matches, m.get("pentaKills"));
+                        matchesArray.add(temp);
                         matches++;
-                        if(matches == 4)
+                        if (matches >= count) {
+                            summonerInfo.put("matches", matchesArray);
                             return;
+                        }
+                        break;
                     }
                 }
             }
             questions++;
-            if(questions >= 15){
+            if (questions >= 15) {
                 sleep(1000);
                 questions = 0;
             }
         }
     }
 
-    private void setThreeMainChampions(ObjectNode obj, JsonNode summonerInfo) {
-        for(int i=1; i<=summonerInfo.size(); i++){
-            obj.put("champ"+i,summonerInfo.get(i-1).get("championId"));
-            obj.put("champLv"+i, summonerInfo.get(i-1).get("championLevel"));
-            obj.put("champName"+i, getChampionById(summonerInfo.get(i-1).get("championId").asText()));
+    private void getMainChampion(ObjectNode obj, JsonNode summonerInfo) {
+        for (JsonNode champion : summonerInfo) {
+            obj.put("mainChamp", getChampionById(champion.get("championId").asText()));
         }
     }
 
-    private String getSummonerRank(final String id) {
-        JsonNode jsonNode = feignRiotSummonerInfoEUN1.getLeagueV4(id);
-        StringBuilder stringBuilder = new StringBuilder();
-        for(JsonNode summoner: jsonNode) {
-            if(summoner.get("queueType").asText().equals("RANKED_SOLO_5x5")) {
-                return stringBuilder
-                        .append(summoner.get("tier").asText())
-                        .append("-")
-                        .append(summoner.get("rank")
-                                .asText()).toString();
+    private ArrayNode getSummonerRank(final String summonerId) {
+        JsonNode jsonNode = feignRiotSummonerInfoEUN1.getLeagueV4(summonerId);
+        ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
+
+        if (jsonNode != null && !jsonNode.isEmpty()) {
+            for (JsonNode rank : jsonNode) {
+                ObjectNode league = JsonNodeFactory.instance.objectNode();
+                if (rank.get("queueType").asText().equals("RANKED_FLEX_SR")) {
+                    league.put("rankFlex", rank);
+                    arrayNode.add(league);
+                } else if (rank.get("queueType").asText().equals("RANKED_SOLO_5x5")) {
+                    league.put("rankSolo", rank);
+                    arrayNode.add(league);
+                } else {
+                    league.put("rankFlex", "BRAK RANGI");
+                    league.put("rankSolo", "BRAK RANGI");
+                }
             }
         }
-        return "BRAK RANGI";
+        return arrayNode;
     }
 
     private String setRankColorDependsOnRank(final String rank) {
-        String lowerCaseRank = rank.toLowerCase();
 
+        String lowerCaseRank = rank.toLowerCase();
         if (lowerCaseRank.contains("gold")) {
             return "#FFD700";
         } else if (lowerCaseRank.contains("silver")) {
             return "#C0C0C0";
         } else if (lowerCaseRank.contains("platinum")) {
-            return "#00CED1";
+            return "#A9A9A9";
         } else if (lowerCaseRank.contains("emerald")) {
             return "#2ecc71";
         } else if (lowerCaseRank.contains("diamond")) {
             return "#00CED1";
+        } else if (lowerCaseRank.contains("bronze")) {
+            return "#964B00";
+        } else if (lowerCaseRank.contains("grandmaster")) {
+            return "#000080";
+        } else if (lowerCaseRank.contains("master")) {
+            return "#800080";
         } else {
-                return "#000000";
+            return "#363949";
         }
-
-        //TODO make cases for all ranks
     }
 
     private String getLatestRiotVersion() {
@@ -153,7 +172,7 @@ class RiotFacade {
     }
 
     private JsonNode getSummonerInfo(String summonerName) {
-        if(summonerName.equalsIgnoreCase("ziomekmasala")){
+        if (summonerName.equalsIgnoreCase("ziomekmasala")) {
             System.out.println("pobrałem");
             return feignRiotSummonerInfoEUN1.getSummonerByPuuid(MASALA_PUUID);
         }
@@ -162,8 +181,8 @@ class RiotFacade {
 
     String getChampionById(String championId) {
         String latestVersion = feignRiotAllChampion.getLolVersions()[0];
-        JsonNode champion = getChampionByKey(championId,feignRiotAllChampion.getChampionById(latestVersion).get("data"));
-        return champion != null ? champion.get("name").asText() : "Brak takiego championka";
+        String championName = getChampionByKey(championId, feignRiotAllChampion.getChampionById(latestVersion).get("data")).get("name").asText();
+        return championName != null ? championName.replaceAll("[\\s'.]+", "") : "Brak takiego championka";
     }
 
     private static JsonNode getChampionByKey(String key, JsonNode champions) {
@@ -178,9 +197,9 @@ class RiotFacade {
         return null;
     }
 
-    JsonNode getAllSummonerMatchesByName(String summonerName, int count) throws InterruptedException {
+    JsonNode getSummonerMatchesByNameAndCount(String summonerName, int count) {
         String puuId = getSummonerInfo(summonerName).get("puuid").asText();
-        return feignRiotMatches.getAllMatchesByPuuidAndCount(puuId, count);
+        return feignRiotMatches.getMatchesByPuuidAndCount(puuId, count);
     }
 
     JsonNode getInfoAboutMatchById(String matchId) {
@@ -188,49 +207,91 @@ class RiotFacade {
     }
 
     JsonNode getInfoAboutAllSummonerInActiveGame(String summonerName) {
-        System.out.println("getInfoAboutAllSummonerInActiveGame");
         JsonNode summonerInfo = getSummonerInfo(summonerName);
         JsonNode matchInfo = feignRiotSummonerInfoEUN1.getMatchInfoBySummonerId(summonerInfo.get("id").asText());
         ObjectNode allInfoAboutMatch = JsonNodeFactory.instance.objectNode();
         ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
         ArrayNode bannedChampionsArray = JsonNodeFactory.instance.arrayNode();
 
-        if(!matchInfo.isEmpty() && !matchInfo.get("participants").isEmpty()) {
+        if (!matchInfo.isEmpty() && !matchInfo.get("participants").isEmpty()) {
             String userTeam = null;
             for (JsonNode s : matchInfo.get("participants")) {
                 ObjectNode summoner = (ObjectNode) s;
-                String rank = getSummonerRank(s.get("summonerId").asText());
+                ArrayNode ranks = getSummonerRank(s.get("summonerId").asText());
+                setRankedSoloRank(ranks, summoner);
                 summoner.put("champName", getChampionById(s.get("championId").asText()));
-                summoner.put("rank", rank);
-                summoner.put("rankColor", setRankColorDependsOnRank(rank));
                 summoner.put("1spellName", getSpellNameBySpellId(s.get("spell1Id").asText()));
                 summoner.put("2spellName", getSpellNameBySpellId(s.get("spell2Id").asText()));
                 arrayNode.add(summoner);
 
-                if(s.get("summonerId").asText().equals(summonerInfo.get("id").asText()))
+                if (s.get("summonerId").asText().equals(summonerInfo.get("id").asText()))
                     userTeam = summoner.get("teamId").asText();
             }
             allInfoAboutMatch.put("summoners", arrayNode);
 
-            for(JsonNode champ: matchInfo.get("bannedChampions")){
+            for (JsonNode champ : matchInfo.get("bannedChampions")) {
                 bannedChampionsArray.add(getChampionById(champ.get("championId").asText()));
             }
 
-            allInfoAboutMatch.put("bannedChampions",bannedChampionsArray);
+            allInfoAboutMatch.put("bannedChampions", bannedChampionsArray);
             allInfoAboutMatch.put("userTeam", userTeam);
             allInfoAboutMatch.put("gameMode", matchInfo.get("gameMode"));
         }
         return allInfoAboutMatch;
     }
 
+    private void setRankedSoloRank(ArrayNode ranks, ObjectNode summoner) {
+        if (ranks != null && !ranks.isEmpty()) {
+            for (JsonNode r : ranks) {
+                if (r.get("rankSolo") != null && r.get("rankSolo").get("queueType").asText().equals("RANKED_SOLO_5x5")) {
+                    summoner.put("rank", r.get("rankSolo").get("tier"));
+                    summoner.put("rankColor", setRankColorDependsOnRank(r.get("rankSolo").get("tier").asText()));
+                    return;
+                } else {
+                    summoner.put("rank", "BRAK RANGI");
+                    summoner.put("rankColor","#363949");
+                }
+            }
+        } else {
+            summoner.put("rank", "BRAK RANGI");
+            summoner.put("rankColor", "#363949");
+        }
+    }
+
     private String getSpellNameBySpellId(String spellId) {
         JsonNode summonerSpells = feignRiotAllChampion.getSummonerSpells(getLatestRiotVersion());
 
-        for (JsonNode n : summonerSpells.get("data")){
-            if(n.get("key").asText().equals(spellId)){
+        for (JsonNode n : summonerSpells.get("data")) {
+            if (n.get("key").asText().equals(spellId)) {
                 return n.get("name").asText();
             }
         }
-        return "X";
+        return "";
+    }
+
+    JsonNode getLast10MatchesBySummonerName(String summonerName) throws InterruptedException {
+        JsonNode matchesInfo = getSummonerMatchesByNameAndCount(summonerName, 20);
+        ObjectNode summonerInfo = (ObjectNode) getSummonerInfo(summonerName);
+        String summonerId = summonerInfo.get("id").asText();
+        ArrayNode ranks = getSummonerRank(summonerId);
+        JsonNode leagueInfo = getLeagueInfo(summonerId);
+        if (leagueInfo != null) {
+            summonerInfo.put("leagueInfo", leagueInfo);
+        }
+        setRankedSoloRank(ranks, summonerInfo);
+        getLastMatchesDependsOnCount(summonerInfo, matchesInfo, 3);
+        return summonerInfo;
+    }
+
+    private JsonNode getLeagueInfo(String summonerId) {
+        JsonNode leagueInfo = feignRiotSummonerInfoEUN1.getLeagueInfoBySummonerId(summonerId);
+        if (leagueInfo != null && !leagueInfo.isEmpty()) {
+            for (JsonNode info : leagueInfo) {
+                if (info.get("queueType").asText().equals("RANKED_SOLO_5x5")) {
+                    return info;
+                }
+            }
+        }
+        return leagueInfo;
     }
 }

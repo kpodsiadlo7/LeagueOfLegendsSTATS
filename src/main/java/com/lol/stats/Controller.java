@@ -27,10 +27,10 @@ class Controller {
     }
 
     @GetMapping("/matches")
-    JsonNode getAllSummonerMatchesByName(
+    JsonNode getSummonerMatchesByNameAndCount(
             @RequestParam String summonerName,
             @RequestParam int count) throws IOException, InterruptedException {
-        return riotFacade.getAllSummonerMatchesByName(summonerName,count);
+        return riotFacade.getSummonerMatchesByNameAndCount(summonerName,count);
     }
 
     @GetMapping("/matchInfo")
@@ -41,5 +41,10 @@ class Controller {
     @GetMapping("/match")
     JsonNode getInfoAboutMatchById(@RequestParam String matchId) {
         return riotFacade.getInfoAboutMatchById(matchId);
+    }
+
+    @GetMapping("/last10matches")
+    JsonNode getLast10MatchesBySummonerName(@RequestParam String summonerName) throws InterruptedException {
+        return riotFacade.getLast10MatchesBySummonerName(summonerName);
     }
 }

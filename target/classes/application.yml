@@ -10,7 +10,7 @@ spring:
       path: /h2-console
 
 api:
-  key: "RGAPI-8ca3a9c3-cb10-4938-848b-acf76a219cdd"
+  key: "RGAPI-2d14a36d-bbc5-4e5c-bda6-81d13434c3ea"
   riot:
     url: "https://eun1.api.riotgames.com/lol"
 masala:
