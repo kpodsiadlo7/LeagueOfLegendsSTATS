@@ -181,6 +181,9 @@ class RiotFacade {
     }
 
     String getChampionById(String championId) {
+        if(championId.equals("-1")){
+            return "BRAK";
+        }
         String latestVersion = feignRiotAllChampion.getLolVersions()[0];
         String championName = getChampionByKey(championId, feignRiotAllChampion.getChampionById(latestVersion).get("data")).get("name").asText();
         return championName != null ? championName.replaceAll("[\\s'.]+", "") : "Brak takiego championka";
