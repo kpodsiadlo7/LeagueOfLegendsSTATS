@@ -1,4 +1,4 @@
-package com.lol.stats;
+package com.lol.stats.configuration;
 
 import org.springframework.stereotype.Component;
 
