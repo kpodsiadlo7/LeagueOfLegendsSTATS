@@ -45,7 +45,7 @@ class Controller {
 
     @GetMapping("/last3matches")
     JsonNode getLast10MatchesBySummonerName(@RequestParam String summonerName) throws InterruptedException {
-        return riotFacade.getLast10MatchesBySummonerName(summonerName);
+        return riotFacade.getLast3MatchesBySummonerName(summonerName);
     }
 
     @GetMapping("/last20matches")

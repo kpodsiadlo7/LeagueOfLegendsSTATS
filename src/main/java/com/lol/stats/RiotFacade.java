@@ -85,6 +85,7 @@ class RiotFacade {
                     if (m.get("puuid").asText().equals(summonerInfo.get("puuid").asText())) {
                         ObjectNode temp = JsonNodeFactory.instance.objectNode();
                         temp.put("matchChampName", m.get("championName"));
+                        temp.put("championId", m.get("championId"));
                         temp.put("assists", m.get("assists"));
                         temp.put("kda", m.get("challenges").get("kda"));
                         temp.put("deaths", m.get("deaths"));
@@ -191,7 +192,7 @@ class RiotFacade {
 
     String getChampionById(String championId) {
         if (championId.equals("-1")) {
-            return "BRAK";
+            return "-1";
         }
         String latestVersion = feignRiotAllChampion.getLolVersions()[0];
         String championName = getChampionByKey(championId, feignRiotAllChampion.getChampionById(latestVersion).get("data")).get("name").asText();
@@ -242,7 +243,7 @@ class RiotFacade {
             allInfoAboutMatch.put("summoners", arrayNode);
 
             for (JsonNode champ : matchInfo.get("bannedChampions")) {
-                bannedChampionsArray.add(getChampionById(champ.get("championId").asText()));
+                bannedChampionsArray.add(champ.get("championId").asText());
             }
 
             allInfoAboutMatch.put("bannedChampions", bannedChampionsArray);
@@ -281,7 +282,7 @@ class RiotFacade {
         return "";
     }
 
-    JsonNode getLast10MatchesBySummonerName(String summonerName) throws InterruptedException {
+    JsonNode getLast3MatchesBySummonerName(String summonerName) throws InterruptedException {
         JsonNode matchesInfo = getSummonerMatchesByNameAndCount(summonerName, 20);
         ObjectNode summonerInfo = getLeagueInfoFromMatchesList(summonerName);
         getLastRankedMatchesDependsOnCount(summonerInfo, matchesInfo, 3);
@@ -304,9 +305,9 @@ class RiotFacade {
         JsonNode exampleMatch = feignRiotSummonerInfoEUN1.getExampleSummonerNameFromRandomExistingGame(apiKeyProvider.provideKey());
         if (exampleMatch != null && !exampleMatch.get("gameList").isEmpty()) {
             String summonerNameFromExistingGame = exampleMatch.get("gameList").get(0).get("participants").get(0).get("summonerName").asText();
-            return summonerNameFromExistingGame != null ? summonerNameFromExistingGame : "Spróbuj ponownie za chwilę";
+            return summonerNameFromExistingGame != null ? summonerNameFromExistingGame : "Brak listy gier. Spróbuj ponownie za chwilę";
         }
-        return "Spróbuj ponownie za chwilę";
+        return "Brak listy gier. Spróbuj ponownie za chwilę";
     }
 
     public JsonNode getLast20MatchesBySummonerName(String summonerName) throws InterruptedException {
