@@ -1,5 +1,4 @@
-<a href="kpodsiadlo7.github.io" style="color: #fff; margin-bottom: 20px; font-size: 35px; font-weight: 700;">League of
-Legends STATS</a>
+# <a href="https://kpodsiadlo7.github.io">League of Legends STATS</a>
 <p style="font-size: 17px; color: #ddd;">To jest aplikacja, <b style="color: white">która umożliwia śledzenie graczy aktualnie uczestniczących w rozgrywce.</b> 
                                 Dzięki niej możemy szybko znaleźć swoich znajomych, zobaczyć z kim obecnie grają, 
                                 sprawdzić ich poziom doświadczenia, oraz uzyskać 
