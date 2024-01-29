@@ -7,7 +7,7 @@ import java.io.IOException;
 
 @RestController
 @CrossOrigin(origins = "https://kpodsiadlo7.github.io")
-    //@CrossOrigin(origins = "http://127.0.0.1:3000/")
+//@CrossOrigin(origins = "http://127.0.0.1:3000/")
 class Controller {
 
     private final RiotFacade riotFacade;
@@ -43,7 +43,7 @@ class Controller {
         return riotFacade.getInfoAboutMatchById(matchId);
     }
 
-    @GetMapping("/last10matches")
+    @GetMapping("/last3matches")
     JsonNode getLast10MatchesBySummonerName(@RequestParam String summonerName) throws InterruptedException {
         return riotFacade.getLast10MatchesBySummonerName(summonerName);
     }
