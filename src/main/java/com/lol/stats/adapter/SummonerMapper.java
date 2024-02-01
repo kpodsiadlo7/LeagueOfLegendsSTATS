@@ -15,9 +15,5 @@ public interface SummonerMapper {
 
     SummonerInfo fromSummonerInfoDto(SummonerInfoDto summonerInfoDto);
 
-    List<Rank> fromListRankDto(List<RankDto> rankDto);
-
-    Rank fromDto(RankDto rankDto);
-
     SummonerDto toSummonerDto(Summoner summoner);
 }

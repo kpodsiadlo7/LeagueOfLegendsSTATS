@@ -2,6 +2,7 @@ package com.lol.stats.domain;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.lol.stats.dto.ChampionDto;
+import com.lol.stats.dto.LeagueInfoDto;
 import com.lol.stats.dto.RankDto;
 import com.lol.stats.dto.SummonerInfoDto;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -32,7 +33,7 @@ public interface SummonerClient {
     JsonNode getMatchInfoBySummonerId(@PathVariable String summonerId, @PathVariable final String apiKey);
 
     @GetMapping("/league/v4/entries/by-summoner/{summonerId}?api_key={apiKey}")
-    JsonNode getLeagueInfoBySummonerId(@PathVariable String summonerId, @PathVariable final String apiKey);
+    List<LeagueInfoDto> getLeagueInfoBySummonerId(@PathVariable String summonerId, @PathVariable final String apiKey);
 
     @GetMapping("/spectator/v4/featured-games?api_key={apiKey}")
     JsonNode getExampleSummonerNameFromRandomExistingGame(@PathVariable final String apiKey);

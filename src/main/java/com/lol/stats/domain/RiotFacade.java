@@ -1,15 +1,19 @@
 package com.lol.stats.domain;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lol.stats.model.Champion;
-import com.lol.stats.model.Rank;
-import com.lol.stats.model.Summoner;
-import com.lol.stats.model.SummonerInfo;
+import com.lol.stats.adapter.MatchMapper;
+import com.lol.stats.adapter.SummonerMapper;
+import com.lol.stats.dto.MatchDto;
+import com.lol.stats.dto.SummonerDto;
+import com.lol.stats.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static java.lang.Thread.sleep;
 
 @Slf4j
 @Service
@@ -17,22 +21,25 @@ import java.util.List;
 public class RiotFacade {
 
     private final AllChampionClient allChampionClient;
-
+    private final SummonerMapper summonerMapper;
+    private final MatchMapper matchMapper;
+    private final MatchClient matchClient;
     private final Provider provider;
 
-    public Summoner getSummonerInfoByName(final String summonerName) throws InterruptedException {
+    public SummonerDto getSummonerInfoByName(final String summonerName) throws InterruptedException {
         SummonerInfo summonerInfo = getSummonerInfo(summonerName);
 
         List<Rank> ranks = getSummonerRank(summonerInfo.getId());
         Champion champion = getMainChampion(summonerInfo.getPuuid());
         String latestLoLVersion = getLatestLoLVersion();
 
-        return bakeSummoner(summonerInfo,ranks,champion,latestLoLVersion);
+        return summonerMapper.toSummonerDto(bakeSummoner(summonerInfo, ranks, champion, latestLoLVersion));
     }
+
     //TODO ZAMIENIONE METODY
     private Summoner bakeSummoner(final SummonerInfo summonerInfo, final List<Rank> ranks, final Champion champion, final String latestLoLVersion) {
         Summoner summoner = setRanksForSoloAndFlex(ranks);
-        String mainChampName = getChampionById(champion.getChampionId(),latestLoLVersion);
+        String mainChampName = getChampionById(champion.getChampionId(), latestLoLVersion);
 
         return Summoner.builder()
                 .id(summonerInfo.getId())
@@ -51,7 +58,7 @@ public class RiotFacade {
 
     private Champion getMainChampion(final String puuid) {
         List<Champion> champions = provider.getChampionsByPuuId(puuid);
-        if (champions != null && !champions.isEmpty()){
+        if (champions != null && !champions.isEmpty()) {
             return champions.get(0);
         }
         return new Champion();
@@ -63,18 +70,15 @@ public class RiotFacade {
         if (ranks != null && !ranks.isEmpty()) {
             for (var rank : ranks) {
                 if (rank.getQueueType().equals("RANKED_FLEX_SR")) {
-                    soloRankColor = setRankColorDependsOnRank(rank.getTier());
-                    log.warn(soloRankColor);
+                    flexRankColor = setRankColorDependsOnTier(rank.getTier());
 
                 } else if (rank.getQueueType().equals("RANKED_SOLO_5x5")) {
-                    flexRankColor = setRankColorDependsOnRank(rank.getTier());
-                    log.warn(flexRankColor);
+                    soloRankColor = setRankColorDependsOnTier(rank.getTier());
                 }
             }
         }
         return Summoner.builder().rankSoloColor(soloRankColor).rankFlexColor(flexRankColor).build();
     }
-
 
 
     private String getLatestLoLVersion() {
@@ -88,7 +92,6 @@ public class RiotFacade {
     private List<Rank> getSummonerRank(final String summonerId) {
         return provider.getLeagueV4Info(summonerId);
     }
-
 
 
     String getChampionById(final int championId, final String latestLoLVersion) {
@@ -110,107 +113,31 @@ public class RiotFacade {
         return null;
     }
 
-    private String setRankColorDependsOnRank(final String rank) {
-
+    private String setRankColorDependsOnTier(final String rank) {
         String lowerCaseRank = rank.toLowerCase();
-        if (lowerCaseRank.contains("gold")) {
-            return "#FFD700";
-        } else if (lowerCaseRank.contains("silver")) {
-            return "#C0C0C0";
-        } else if (lowerCaseRank.contains("platinum")) {
-            return "#A9A9A9";
-        } else if (lowerCaseRank.contains("emerald")) {
-            return "#2ecc71";
-        } else if (lowerCaseRank.contains("diamond")) {
-            return "#00CED1";
-        } else if (lowerCaseRank.contains("bronze")) {
-            return "#964B00";
-        } else if (lowerCaseRank.contains("grandmaster")) {
-            return "#000080";
-        } else if (lowerCaseRank.contains("master")) {
-            return "#800080";
-        } else {
-            return "#363949";
-        }
+        return switch (lowerCaseRank) {
+            case "gold" -> "#FFD700";
+            case "silver" -> "#C0C0C0";
+            case "platinum" -> "#A9A9A9";
+            case "emerald" -> "#2ecc71";
+            case "diamond" -> "#00CED1";
+            case "bronze" -> "#964B00";
+            case "grandmaster" -> "#000080";
+            case "master" -> "#800080";
+            default -> "#363949";
+        };
     }
     //TODO ZAMIENIONE METODY
-/*
-    private String getProfileIconUrl(String summonerIconId) {
-        return ICON_URL + getLatestLoLVersion() + "/img/profileicon/" + summonerIconId + ".png";
-    }
 
-    private void getLastRankedMatchesDependsOnCount(ObjectNode summonerInfo, JsonNode matchesInfo, int count) throws InterruptedException {
-        int matches = 0;
-        int questions = 0;
-        int wins = 0;
-        int losses = 0;
-        ArrayNode matchesArray = JsonNodeFactory.instance.arrayNode();
-
-        for (JsonNode singleMatch : matchesInfo) {
-            JsonNode match = getInfoAboutMatchById(singleMatch.asText());
-            if (match.get("gameMode").asText().equals("CLASSIC")) {
-                for (JsonNode m : match.get("participants")) {
-                    if (m.get("puuid").asText().equals(summonerInfo.get("puuid").asText())) {
-                        ObjectNode temp = JsonNodeFactory.instance.objectNode();
-                        temp.put("matchChampName", m.get("championName"));
-                        temp.put("championId", m.get("championId"));
-                        temp.put("assists", m.get("assists"));
-                        temp.put("kda", m.get("challenges").get("kda"));
-                        temp.put("deaths", m.get("deaths"));
-                        temp.put("kills", m.get("kills"));
-                        temp.put("lane", m.get("teamPosition"));
-                        temp.put("dealtDamage", m.get("totalDamageDealtToChampions"));
-                        switch (m.get("win").asText()) {
-                            case "true" -> {
-                                temp
-                                        .put("win", "WYGRANA")
-                                        .put("winColor", "green");
-                                wins++;
-                            }
-
-                            case "false" -> {
-                                temp
-                                        .put("win", "PRZEGRANA")
-                                        .put("winColor", "red");
-                                losses++;
-                            }
-                        }
-                        matchesArray.add(temp);
-                        matches++;
-                        if (matches >= count) {
-                            summonerInfo.put("wins", wins);
-                            summonerInfo.put("losses", losses);
-                            summonerInfo.put("matches", matchesArray);
-                            return;
-                        }
-                        break;
-                    }
-                }
-            }
-            questions++;
-            if (questions >= 15) {
-                sleep(1000);
-                questions = 0;
-            }
-        }
-    }
-
-    private void getMainChampion(ObjectNode obj, JsonNode summonerInfo) {
-        for (JsonNode champion : summonerInfo) {
-            obj.put("mainChamp", getChampionById(champion.get("championId").asText()));
-        }
-    }
-
-
-    JsonNode getSummonerMatchesByNameAndCount(String summonerName, int count) {
-        String puuId = getSummonerInfo(summonerName).get("puuid").asText();
-        return matchClient.getMatchesByPuuidAndCount(puuId, count, provider.provideKey());
+    List<String> getSummonerMatchesByNameAndCount(String summonerName, int count) {
+        String puuId = getSummonerInfo(summonerName).getPuuid();
+        return provider.getMatchesByPuuIdAndCount(puuId, count);
     }
 
     JsonNode getInfoAboutMatchById(String matchId) {
         return matchClient.getInfoAboutMatchById(matchId, provider.provideKey()).get("info");
     }
-
+/*
     JsonNode getInfoAboutAllSummonerInActiveGame(String summonerName) {
         JsonNode summonerInfo = getSummonerInfo(summonerName);
         JsonNode matchInfo = summonerClient.getMatchInfoBySummonerId(summonerInfo.get("id").asText(), provider.provideKey());
@@ -245,22 +172,22 @@ public class RiotFacade {
         return allInfoAboutMatch;
     }
 
-    private void setRankedSoloRank(ArrayNode ranks, ObjectNode summoner) {
+ */
+
+    private Match setRankedSoloRank(List<Rank> ranks) {
+        String rank = "BRAK RANGI";
+        String rankColor = "#363949";
         if (ranks != null && !ranks.isEmpty()) {
-            for (JsonNode r : ranks) {
-                if (r.get("rankSolo") != null && r.get("rankSolo").get("queueType").asText().equals("RANKED_SOLO_5x5")) {
-                    summoner.put("rank", r.get("rankSolo").get("tier"));
-                    summoner.put("rankColor", setRankColorDependsOnRank(r.get("rankSolo").get("tier").asText()));
-                    return;
-                } else {
-                    summoner.put("rank", "BRAK RANGI");
-                    summoner.put("rankColor", "#363949");
+            for (Rank r : ranks) {
+                if (r.getQueueType().equals("RANKED_SOLO_5x5")) {
+                    rank = r.getTier();
+                    rankColor = setRankColorDependsOnTier(rank);
+                    log.warn("Powinien ustalić rangę {} i kolor {}", rank, rankColor);
+                    return Match.builder().rank(rank).rankColor(rankColor).build();
                 }
             }
-        } else {
-            summoner.put("rank", "BRAK RANGI");
-            summoner.put("rankColor", "#363949");
         }
+        return Match.builder().rank(rank).rankColor(rankColor).build();
     }
 
     private String getSpellNameBySpellId(String spellId) {
@@ -274,27 +201,21 @@ public class RiotFacade {
         return "";
     }
 
-    JsonNode getLast3MatchesBySummonerName(String summonerName) throws InterruptedException {
-        JsonNode matchesInfo = getSummonerMatchesByNameAndCount(summonerName, 20);
-        ObjectNode summonerInfo = getLeagueInfoFromMatchesList(summonerName);
-        getLastRankedMatchesDependsOnCount(summonerInfo, matchesInfo, 3);
-        return summonerInfo;
-    }
+    private LeagueInfo getLeagueInfo(String summonerId) {
+        List<LeagueInfo> leagueInfoList = provider.getLeagueInfoListBySummonerId(summonerId);
 
-    private JsonNode getLeagueInfo(String summonerId) {
-        JsonNode leagueInfo = summonerClient.getLeagueInfoBySummonerId(summonerId, provider.provideKey());
-        if (leagueInfo != null && !leagueInfo.isEmpty()) {
-            for (JsonNode info : leagueInfo) {
-                if (info.get("queueType").asText().equals("RANKED_SOLO_5x5")) {
-                    return info;
+        if (leagueInfoList != null && !leagueInfoList.isEmpty()) {
+            for (LeagueInfo league : leagueInfoList) {
+                if (league.getQueueType().equals("RANKED_SOLO_5x5")) {
+                    return league;
                 }
             }
         }
-        return leagueInfo;
+        return null;
     }
 
     public String getRandomSummonerNameFromExistingGame() {
-        JsonNode exampleMatch = summonerClient.getExampleSummonerNameFromRandomExistingGame(provider.provideKey());
+        JsonNode exampleMatch = provider.getExampleSummonerNameFromExistingGame();
         if (exampleMatch != null && !exampleMatch.get("gameList").isEmpty()) {
             String summonerNameFromExistingGame = exampleMatch.get("gameList").get(0).get("participants").get(0).get("summonerName").asText();
             return summonerNameFromExistingGame != null ? summonerNameFromExistingGame : "Brak listy gier. Spróbuj ponownie za chwilę";
@@ -302,23 +223,92 @@ public class RiotFacade {
         return "Brak listy gier. Spróbuj ponownie za chwilę";
     }
 
-    public JsonNode getLast20MatchesBySummonerName(String summonerName) throws InterruptedException {
-        JsonNode matchesInfo = getSummonerMatchesByNameAndCount(summonerName, 50);
-        ObjectNode summonerInfo = getLeagueInfoFromMatchesList(summonerName);
-        getLastRankedMatchesDependsOnCount(summonerInfo, matchesInfo, 20);
-        return summonerInfo;
+
+    public MatchDto getLast3MatchesBySummonerName(String summonerName) throws InterruptedException {
+        List<String> matchesIdList = getSummonerMatchesByNameAndCount(summonerName, 20);
+        Match leagueInfo = getLeagueInfoFromMatchesList(summonerName);
+        return matchMapper.toDto(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, 3));
     }
 
-    private ObjectNode getLeagueInfoFromMatchesList(String summonerName) {
-        ObjectNode summonerInfo = (ObjectNode) getSummonerInfo(summonerName);
-        String summonerId = summonerInfo.get("id").asText();
-        ArrayNode ranks = getSummonerRank(summonerId);
-        JsonNode leagueInfo = getLeagueInfo(summonerId);
-        if (leagueInfo != null) {
-            summonerInfo.put("leagueInfo", leagueInfo);
-        }
-        setRankedSoloRank(ranks, summonerInfo);
-        return summonerInfo;
+    public MatchDto getLast20MatchesBySummonerName(String summonerName) throws InterruptedException {
+        List<String> matchesIdList = getSummonerMatchesByNameAndCount(summonerName, 50);
+        Match leagueInfo = getLeagueInfoFromMatchesList(summonerName);
+        return matchMapper.toDto(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, 20));
     }
-    */
+
+    private Match getLastRankedMatchesDependsOnCount(Match leagueInfo, List<String> matchesIdList, int count) throws InterruptedException {
+        int matches = 0;
+        int questions = 0;
+        int wins = 0;
+        int losses = 0;
+
+        for (var singleMatch : matchesIdList) {
+            JsonNode matchJN = getInfoAboutMatchById(singleMatch);
+            if (matchJN.get("gameMode").asText().equals("CLASSIC")) {
+                for (JsonNode m : matchJN.get("participants")) {
+                    ChampMatch champMatch = new ChampMatch();
+                    if (m.get("puuid").asText().equals(leagueInfo.getPuuid())) {
+                        champMatch.setMatchChampName(m.get("championName").asText());
+                        champMatch.setChampionId(m.get("championId").asInt());
+                        champMatch.setAssists(m.get("assists").asInt());
+                        champMatch.setKda(m.get("challenges").get("kda").asInt());
+                        champMatch.setDeaths(m.get("deaths").asInt());
+                        champMatch.setKills(m.get("kills").asInt());
+                        champMatch.setLane(m.get("teamPosition").asText());
+                        champMatch.setDealtDamage(m.get("totalDamageDealtToChampions").asInt());
+                        switch (m.get("win").asText()) {
+                            case "true" -> {
+                                champMatch.setWin("WYGRANA");
+                                champMatch.setWinColor("green");
+                                wins++;
+                            }
+
+                            case "false" -> {
+                                champMatch.setWin("PRZEGRANA");
+                                champMatch.setWinColor("red");
+                                losses++;
+                            }
+                        }
+                        leagueInfo.getMatches().add(champMatch);
+                        matches++;
+                        if (matches >= count) {
+                            leagueInfo.setWins(wins);
+                            leagueInfo.setLosses(losses);
+                            return leagueInfo;
+                        }
+                        break;
+                    }
+                }
+            }
+            questions++;
+            if (questions >= 15) {
+                sleep(1000);
+                questions = 0;
+            }
+        }
+        return null;
+    }
+
+    private Match getLeagueInfoFromMatchesList(String summonerName) {
+        SummonerInfo summonerInfo = getSummonerInfo(summonerName);
+        String summonerId = summonerInfo.getId();
+        LeagueInfo leagueInfo = getLeagueInfo(summonerId);
+        Match match = setRankedSoloRank(getSummonerRank(summonerId));
+
+        return bakeMatch(summonerInfo, leagueInfo, match);
+    }
+
+    private Match bakeMatch(final SummonerInfo summonerInfo, final LeagueInfo leagueInfo, final Match match) {
+        return Match.builder()
+                .id(summonerInfo.getId())
+                .accountId(summonerInfo.getAccountId())
+                .puuid(summonerInfo.getPuuid())
+                .name(summonerInfo.getName())
+                .profileIconId(summonerInfo.getProfileIconId())
+                .summonerLevel(summonerInfo.getSummonerLevel())
+                .leagueInfo(leagueInfo)
+                .rank(match.getRank())
+                .rankColor(match.getRankColor())
+                .matches(new ArrayList<>()).build();
+    }
 }
