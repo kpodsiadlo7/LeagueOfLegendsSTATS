@@ -1,26 +1,28 @@
-package com.lol.stats;
+package com.lol.stats.adapter;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.lol.stats.domain.RiotFacade;
+import com.lol.stats.dto.SummonerDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
 @RestController
+@RequiredArgsConstructor
 @CrossOrigin(origins = "https://kpodsiadlo7.github.io")
 //@CrossOrigin(origins = "http://127.0.0.1:3000/")
-class Controller {
+public class Controller {
 
     private final RiotFacade riotFacade;
-
-    Controller(RiotFacade riotFacade) {
-        this.riotFacade = riotFacade;
-    }
+    private final SummonerMapper summonerMapper;
 
     @GetMapping
-    JsonNode getSummonerByName(@RequestParam String summonerName) throws InterruptedException {
-       return riotFacade.getSummonerInfoByName(summonerName);
+    SummonerDto getSummonerByName(@RequestParam String summonerName) throws InterruptedException {
+       return summonerMapper.toSummonerDto(riotFacade.getSummonerInfoByName(summonerName));
     }
-
+/*
     @GetMapping("/champion")
     String getChampionById(@RequestParam String championId) throws IOException {
         return riotFacade.getChampionById(championId);
@@ -58,4 +60,6 @@ class Controller {
     String  getRandomSummonerNameFromExistingGame(){
         return riotFacade.getRandomSummonerNameFromExistingGame();
     }
+
+ */
 }

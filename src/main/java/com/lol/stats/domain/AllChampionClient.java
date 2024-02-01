@@ -1,4 +1,4 @@
-package com.lol.stats;
+package com.lol.stats.domain;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 @FeignClient(value = "RiotAllChampions", url = "https://ddragon.leagueoflegends.com/")
-interface FeignRiotAllChampion {
+public interface AllChampionClient {
 
     @GetMapping("/api/versions.json")
     String[] getLolVersions();
