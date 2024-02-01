@@ -3,9 +3,15 @@ package com.lol.stats.adapter;
 import com.lol.stats.domain.MatchClient;
 import com.lol.stats.domain.RiotFacade;
 import com.lol.stats.dto.MatchDto;
+import com.lol.stats.dto.MatchInfoDto;
+import com.lol.stats.dto.MatchSummonerDto;
 import com.lol.stats.dto.SummonerDto;
+import com.lol.stats.model.MatchInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,19 +25,19 @@ public class Controller {
     SummonerDto getSummonerByName(@RequestParam String summonerName) throws InterruptedException {
        return riotFacade.getSummonerInfoByName(summonerName);
     }
-/*
+
     @GetMapping("/matches")
-    JsonNode getSummonerMatchesByNameAndCount(
+    List<String> getSummonerMatchesByNameAndCount(
             @RequestParam String summonerName,
             @RequestParam int count) throws IOException, InterruptedException {
         return riotFacade.getSummonerMatchesByNameAndCount(summonerName,count);
     }
 
     @GetMapping("/matchInfo")
-    JsonNode getMatchInfoBySummonerName(@RequestParam String summonerName){
+    MatchInfoDto getMatchInfoBySummonerName(@RequestParam String summonerName){
         return riotFacade.getInfoAboutAllSummonerInActiveGame(summonerName);
     }
-
+/*
     @GetMapping("/match")
     JsonNode getInfoAboutMatchById(@RequestParam String matchId) {
         return riotFacade.getInfoAboutMatchById(matchId);
@@ -43,6 +49,9 @@ public class Controller {
     }
 
  */
+
+
+
 
     @GetMapping("/last20matches")
     MatchDto getLast20MatchesBySummonerName(@RequestParam String summonerName) throws InterruptedException {

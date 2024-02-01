@@ -23,4 +23,12 @@ public interface Provider {
     List<LeagueInfo> getLeagueInfoListBySummonerId(String summonerId);
 
     JsonNode getExampleSummonerNameFromExistingGame();
+
+    JsonNode getAllChampionsDependsOnLoLVersion(String latestLoLVersion);
+
+    JsonNode getInfoAboutMatchById(String matchId);
+
+    JsonNode getMatchInfoBySummonerId(String id);
+
+    JsonNode getSummonerSpells(String latestLoLVersion);
 }

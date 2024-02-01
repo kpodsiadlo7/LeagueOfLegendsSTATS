@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.lol.stats.adapter.MatchMapper;
 import com.lol.stats.adapter.SummonerMapper;
 import com.lol.stats.dto.MatchDto;
+import com.lol.stats.dto.MatchInfoDto;
 import com.lol.stats.dto.SummonerDto;
 import com.lol.stats.model.*;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +21,8 @@ import static java.lang.Thread.sleep;
 @RequiredArgsConstructor
 public class RiotFacade {
 
-    private final AllChampionClient allChampionClient;
     private final SummonerMapper summonerMapper;
     private final MatchMapper matchMapper;
-    private final MatchClient matchClient;
     private final Provider provider;
 
     public SummonerDto getSummonerInfoByName(final String summonerName) throws InterruptedException {
@@ -36,7 +35,6 @@ public class RiotFacade {
         return summonerMapper.toSummonerDto(bakeSummoner(summonerInfo, ranks, champion, latestLoLVersion));
     }
 
-    //TODO ZAMIENIONE METODY
     private Summoner bakeSummoner(final SummonerInfo summonerInfo, final List<Rank> ranks, final Champion champion, final String latestLoLVersion) {
         Summoner summoner = setRanksForSoloAndFlex(ranks);
         String mainChampName = getChampionById(champion.getChampionId(), latestLoLVersion);
@@ -98,16 +96,17 @@ public class RiotFacade {
         if (championId == -1) {
             return "brak";
         }
-        String championName = getChampionByKey(championId, allChampionClient.getChampionById(latestLoLVersion).get("data")).get("name").asText();
+        String championName = getChampionByKey(championId, provider.getAllChampionsDependsOnLoLVersion(latestLoLVersion).get("data")).get("name").asText();
         return championName != null ? championName.replaceAll("[\\s'.]+", "") : "Brak takiego championka";
     }
 
     private static JsonNode getChampionByKey(int key, JsonNode champions) {
-        for (JsonNode championNode : champions) {
-            int championKey = Integer.parseInt(championNode.get("key").asText());
-
-            if (championKey == key) {
-                return championNode;
+        if(champions != null && !champions.isEmpty()){
+            for (JsonNode championNode : champions) {
+                int championKey = Integer.parseInt(championNode.get("key").asText());
+                if (championKey == key) {
+                    return championNode;
+                }
             }
         }
         return null;
@@ -127,52 +126,56 @@ public class RiotFacade {
             default -> "#363949";
         };
     }
-    //TODO ZAMIENIONE METODY
 
-    List<String> getSummonerMatchesByNameAndCount(String summonerName, int count) {
+    public List<String> getSummonerMatchesByNameAndCount(String summonerName, int count) {
         String puuId = getSummonerInfo(summonerName).getPuuid();
         return provider.getMatchesByPuuIdAndCount(puuId, count);
     }
 
     JsonNode getInfoAboutMatchById(String matchId) {
-        return matchClient.getInfoAboutMatchById(matchId, provider.provideKey()).get("info");
+        return provider.getInfoAboutMatchById(matchId);
     }
-/*
-    JsonNode getInfoAboutAllSummonerInActiveGame(String summonerName) {
-        JsonNode summonerInfo = getSummonerInfo(summonerName);
-        JsonNode matchInfo = summonerClient.getMatchInfoBySummonerId(summonerInfo.get("id").asText(), provider.provideKey());
-        ObjectNode allInfoAboutMatch = JsonNodeFactory.instance.objectNode();
-        ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
-        ArrayNode bannedChampionsArray = JsonNodeFactory.instance.arrayNode();
+
+    public MatchInfoDto getInfoAboutAllSummonerInActiveGame(String summonerName) {
+        SummonerInfo summonerInfo = getSummonerInfo(summonerName);
+        JsonNode matchInfo = provider.getMatchInfoBySummonerId(summonerInfo.getId());
+
+        MatchInfo allInfoAboutMatch = MatchInfo.builder().summoners(new ArrayList<>()).bannedChampions(new ArrayList<>()).build();
 
         if (!matchInfo.isEmpty() && !matchInfo.get("participants").isEmpty()) {
             String userTeam = null;
             for (JsonNode s : matchInfo.get("participants")) {
-                ObjectNode summoner = (ObjectNode) s;
-                ArrayNode ranks = getSummonerRank(s.get("summonerId").asText());
-                setRankedSoloRank(ranks, summoner);
-                summoner.put("champName", getChampionById(s.get("championId").asText()));
-                summoner.put("1spellName", getSpellNameBySpellId(s.get("spell1Id").asText()));
-                summoner.put("2spellName", getSpellNameBySpellId(s.get("spell2Id").asText()));
-                arrayNode.add(summoner);
+                List<Rank> ranks = getSummonerRank(s.get("summonerId").asText());
+                MatchSummoner matchSummoner = new MatchSummoner();
+                Match match = setRankedSoloRank(ranks);
 
-                if (s.get("summonerId").asText().equals(summonerInfo.get("id").asText()))
-                    userTeam = summoner.get("teamId").asText();
+                matchSummoner.setPuuid(s.get("puuid").asText());
+                matchSummoner.setTeamId(s.get("teamId").asInt());
+                matchSummoner.setChampionId(s.get("championId").asInt());
+                matchSummoner.setSummonerName(s.get("summonerName").asText());
+                matchSummoner.setSummonerId(s.get("summonerId").asText());
+                matchSummoner.setRank(match.getRank());
+                matchSummoner.setRankColor(match.getRankColor());
+                matchSummoner.setChampName(getChampionById(s.get("championId").asInt(),getLatestLoLVersion()));
+                matchSummoner.setSpellName1(getSpellNameBySpellId(s.get("spell1Id").asText()));
+                matchSummoner.setSpellName2(getSpellNameBySpellId(s.get("spell2Id").asText()));
+
+                allInfoAboutMatch.getSummoners().add(matchSummoner);
+
+                if (s.get("summonerId").asText().equals(summonerInfo.getId()))
+                    userTeam = s.get("teamId").asText();
             }
-            allInfoAboutMatch.put("summoners", arrayNode);
 
             for (JsonNode champ : matchInfo.get("bannedChampions")) {
-                bannedChampionsArray.add(champ.get("championId").asText());
+                allInfoAboutMatch.getBannedChampions().add(new BannedChampion(champ.get("championId").asText()));
             }
-
-            allInfoAboutMatch.put("bannedChampions", bannedChampionsArray);
-            allInfoAboutMatch.put("userTeam", userTeam);
-            allInfoAboutMatch.put("gameMode", matchInfo.get("gameMode"));
+            allInfoAboutMatch.setUserTeam(userTeam);
+            allInfoAboutMatch.setGameMode(matchInfo.get("gameMode").asText());
         }
-        return allInfoAboutMatch;
+        return matchMapper.toMatchInfoDto(allInfoAboutMatch);
     }
 
- */
+
 
     private Match setRankedSoloRank(List<Rank> ranks) {
         String rank = "BRAK RANGI";
@@ -182,7 +185,6 @@ public class RiotFacade {
                 if (r.getQueueType().equals("RANKED_SOLO_5x5")) {
                     rank = r.getTier();
                     rankColor = setRankColorDependsOnTier(rank);
-                    log.warn("Powinien ustalić rangę {} i kolor {}", rank, rankColor);
                     return Match.builder().rank(rank).rankColor(rankColor).build();
                 }
             }
@@ -191,7 +193,7 @@ public class RiotFacade {
     }
 
     private String getSpellNameBySpellId(String spellId) {
-        JsonNode summonerSpells = allChampionClient.getSummonerSpells(getLatestLoLVersion());
+        JsonNode summonerSpells = provider.getSummonerSpells(getLatestLoLVersion());
 
         for (JsonNode n : summonerSpells.get("data")) {
             if (n.get("key").asText().equals(spellId)) {
@@ -227,13 +229,13 @@ public class RiotFacade {
     public MatchDto getLast3MatchesBySummonerName(String summonerName) throws InterruptedException {
         List<String> matchesIdList = getSummonerMatchesByNameAndCount(summonerName, 20);
         Match leagueInfo = getLeagueInfoFromMatchesList(summonerName);
-        return matchMapper.toDto(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, 3));
+        return matchMapper.toMatchDto(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, 3));
     }
 
     public MatchDto getLast20MatchesBySummonerName(String summonerName) throws InterruptedException {
         List<String> matchesIdList = getSummonerMatchesByNameAndCount(summonerName, 50);
         Match leagueInfo = getLeagueInfoFromMatchesList(summonerName);
-        return matchMapper.toDto(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, 20));
+        return matchMapper.toMatchDto(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, 20));
     }
 
     private Match getLastRankedMatchesDependsOnCount(Match leagueInfo, List<String> matchesIdList, int count) throws InterruptedException {

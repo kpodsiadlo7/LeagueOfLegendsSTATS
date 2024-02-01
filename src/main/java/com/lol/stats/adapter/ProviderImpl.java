@@ -1,10 +1,7 @@
 package com.lol.stats.adapter;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lol.stats.domain.ClientLoLVersion;
-import com.lol.stats.domain.MatchClient;
-import com.lol.stats.domain.Provider;
-import com.lol.stats.domain.SummonerClient;
+import com.lol.stats.domain.*;
 import com.lol.stats.model.Champion;
 import com.lol.stats.model.LeagueInfo;
 import com.lol.stats.model.Rank;
@@ -32,6 +29,7 @@ public class ProviderImpl implements Provider {
     private final LeagueMapper leagueMapper;
     private final ClientLoLVersion clientLoLVersion;
     private final MatchClient matchClient;
+    private final AllChampionClient allChampionClient;
 
     @Override
     public String provideKey() {
@@ -79,5 +77,25 @@ public class ProviderImpl implements Provider {
     @Override
     public JsonNode getExampleSummonerNameFromExistingGame() {
         return summonerClient.getExampleSummonerNameFromRandomExistingGame(provideKey());
+    }
+
+    @Override
+    public JsonNode getAllChampionsDependsOnLoLVersion(String latestLoLVersion) {
+        return allChampionClient.getChampionById(latestLoLVersion);
+    }
+
+    @Override
+    public JsonNode getInfoAboutMatchById(String matchId) {
+        return matchClient.getInfoAboutMatchById(matchId, provideKey());
+    }
+
+    @Override
+    public JsonNode getMatchInfoBySummonerId(String id) {
+        return summonerClient.getMatchInfoBySummonerId(id, provideKey());
+    }
+
+    @Override
+    public JsonNode getSummonerSpells(String latestLoLVersion) {
+        return allChampionClient.getSummonerSpells(latestLoLVersion);
     }
 }
