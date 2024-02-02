@@ -1,4 +1,5 @@
 package com.lol.stats.domain;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.lol.stats.model.Champion;
 import com.lol.stats.model.LeagueInfo;

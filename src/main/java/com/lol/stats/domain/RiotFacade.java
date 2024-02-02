@@ -101,7 +101,7 @@ public class RiotFacade {
     }
 
     private static JsonNode getChampionByKey(int key, JsonNode champions) {
-        if(champions != null && !champions.isEmpty()){
+        if (champions != null && !champions.isEmpty()) {
             for (JsonNode championNode : champions) {
                 int championKey = Integer.parseInt(championNode.get("key").asText());
                 if (championKey == key) {
@@ -156,7 +156,7 @@ public class RiotFacade {
                 matchSummoner.setSummonerId(s.get("summonerId").asText());
                 matchSummoner.setRank(match.getRank());
                 matchSummoner.setRankColor(match.getRankColor());
-                matchSummoner.setChampName(getChampionById(s.get("championId").asInt(),getLatestLoLVersion()));
+                matchSummoner.setChampName(getChampionById(s.get("championId").asInt(), getLatestLoLVersion()));
                 matchSummoner.setSpellName1(getSpellNameBySpellId(s.get("spell1Id").asText()));
                 matchSummoner.setSpellName2(getSpellNameBySpellId(s.get("spell2Id").asText()));
 
@@ -174,7 +174,6 @@ public class RiotFacade {
         }
         return matchMapper.toMatchInfoDto(allInfoAboutMatch);
     }
-
 
 
     private Match setRankedSoloRank(List<Rank> ranks) {
@@ -246,8 +245,8 @@ public class RiotFacade {
 
         for (var singleMatch : matchesIdList) {
             JsonNode matchJN = getInfoAboutMatchById(singleMatch);
-            if (matchJN.get("gameMode").asText().equals("CLASSIC")) {
-                for (JsonNode m : matchJN.get("participants")) {
+            if (matchJN.get("info").get("gameMode").asText().equals("CLASSIC")) {
+                for (JsonNode m : matchJN.get("info").get("participants")) {
                     ChampMatch champMatch = new ChampMatch();
                     if (m.get("puuid").asText().equals(leagueInfo.getPuuid())) {
                         champMatch.setMatchChampName(m.get("championName").asText());
@@ -288,7 +287,7 @@ public class RiotFacade {
                 questions = 0;
             }
         }
-        return null;
+        return leagueInfo;
     }
 
     private Match getLeagueInfoFromMatchesList(String summonerName) {

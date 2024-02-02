@@ -1,12 +1,9 @@
 package com.lol.stats.adapter;
 
-import com.lol.stats.domain.MatchClient;
 import com.lol.stats.domain.RiotFacade;
 import com.lol.stats.dto.MatchDto;
 import com.lol.stats.dto.MatchInfoDto;
-import com.lol.stats.dto.MatchSummonerDto;
 import com.lol.stats.dto.SummonerDto;
-import com.lol.stats.model.MatchInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,43 +12,33 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-//@CrossOrigin(origins = "https://kpodsiadlo7.github.io")
-@CrossOrigin(origins = "http://127.0.0.1:3000/")
+@CrossOrigin(origins = "https://kpodsiadlo7.github.io")
+//@CrossOrigin(origins = "http://127.0.0.1:3000/")
 public class Controller {
 
     private final RiotFacade riotFacade;
 
     @GetMapping
     SummonerDto getSummonerByName(@RequestParam String summonerName) throws InterruptedException {
-       return riotFacade.getSummonerInfoByName(summonerName);
+        return riotFacade.getSummonerInfoByName(summonerName);
     }
 
     @GetMapping("/matches")
     List<String> getSummonerMatchesByNameAndCount(
             @RequestParam String summonerName,
             @RequestParam int count) throws IOException, InterruptedException {
-        return riotFacade.getSummonerMatchesByNameAndCount(summonerName,count);
+        return riotFacade.getSummonerMatchesByNameAndCount(summonerName, count);
     }
 
     @GetMapping("/matchInfo")
-    MatchInfoDto getMatchInfoBySummonerName(@RequestParam String summonerName){
+    MatchInfoDto getMatchInfoBySummonerName(@RequestParam String summonerName) {
         return riotFacade.getInfoAboutAllSummonerInActiveGame(summonerName);
-    }
-/*
-    @GetMapping("/match")
-    JsonNode getInfoAboutMatchById(@RequestParam String matchId) {
-        return riotFacade.getInfoAboutMatchById(matchId);
     }
 
     @GetMapping("/last3matches")
-    JsonNode getLast10MatchesBySummonerName(@RequestParam String summonerName) throws InterruptedException {
+    MatchDto getLast3MatchesBySummonerName(@RequestParam String summonerName) throws InterruptedException {
         return riotFacade.getLast3MatchesBySummonerName(summonerName);
     }
-
- */
-
-
-
 
     @GetMapping("/last20matches")
     MatchDto getLast20MatchesBySummonerName(@RequestParam String summonerName) throws InterruptedException {
@@ -59,7 +46,7 @@ public class Controller {
     }
 
     @GetMapping("/randomMatch")
-    String getRandomSummonerNameFromExistingGame(){
+    String getRandomSummonerNameFromExistingGame() {
         return riotFacade.getRandomSummonerNameFromExistingGame();
     }
 }

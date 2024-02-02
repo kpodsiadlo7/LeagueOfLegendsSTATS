@@ -9,6 +9,5 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface RankMapper {
     List<Rank> fromListRankDto(List<RankDto> rankDto);
-
     Rank fromDto(RankDto rankDto);
 }
