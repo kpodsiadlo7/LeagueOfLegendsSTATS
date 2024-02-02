@@ -12,8 +12,8 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-//@CrossOrigin(origins = "https://kpodsiadlo7.github.io")
-@CrossOrigin(origins = "http://127.0.0.1:3000/")
+@CrossOrigin(origins = "https://kpodsiadlo7.github.io")
+//@CrossOrigin(origins = "http://127.0.0.1:3000/")
 public class Controller {
 
     private final RiotFacade riotFacade;

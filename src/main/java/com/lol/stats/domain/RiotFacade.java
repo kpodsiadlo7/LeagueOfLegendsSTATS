@@ -242,7 +242,6 @@ public class RiotFacade {
         int questions = 0;
         int wins = 0;
         int losses = 0;
-
         for (var singleMatch : matchesIdList) {
             JsonNode matchJN = getInfoAboutMatchById(singleMatch);
             if (matchJN.get("info").get("gameMode").asText().equals("CLASSIC")) {
@@ -287,6 +286,8 @@ public class RiotFacade {
                 questions = 0;
             }
         }
+        leagueInfo.setWins(wins);
+        leagueInfo.setLosses(losses);
         return leagueInfo;
     }
 
