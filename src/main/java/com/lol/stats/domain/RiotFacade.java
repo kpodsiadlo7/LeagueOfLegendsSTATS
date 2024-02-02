@@ -1,8 +1,8 @@
 package com.lol.stats.domain;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lol.stats.adapter.MatchMapper;
-import com.lol.stats.adapter.SummonerMapper;
+import com.lol.stats.adapter.mapper.MatchMapper;
+import com.lol.stats.adapter.mapper.SummonerMapper;
 import com.lol.stats.dto.MatchDto;
 import com.lol.stats.dto.MatchInfoDto;
 import com.lol.stats.dto.SummonerDto;
@@ -32,7 +32,7 @@ public class RiotFacade {
         Champion champion = getMainChampion(summonerInfo.getPuuid());
         String latestLoLVersion = getLatestLoLVersion();
 
-        return summonerMapper.toSummonerDto(bakeSummoner(summonerInfo, ranks, champion, latestLoLVersion));
+        return summonerMapper.mapToSummonerDtoFromSummoner(bakeSummoner(summonerInfo, ranks, champion, latestLoLVersion));
     }
 
     private Summoner bakeSummoner(final SummonerInfo summonerInfo, final List<Rank> ranks, final Champion champion, final String latestLoLVersion) {
@@ -172,7 +172,7 @@ public class RiotFacade {
             allInfoAboutMatch.setUserTeam(userTeam);
             allInfoAboutMatch.setGameMode(matchInfo.get("gameMode").asText());
         }
-        return matchMapper.toMatchInfoDto(allInfoAboutMatch);
+        return matchMapper.mapToMatchInfoDtoFromMatchInfo(allInfoAboutMatch);
     }
 
 
@@ -212,7 +212,7 @@ public class RiotFacade {
                 }
             }
         }
-        return null;
+        return new LeagueInfo();
     }
 
     public String getRandomSummonerNameFromExistingGame() {
@@ -228,13 +228,13 @@ public class RiotFacade {
     public MatchDto getLast3MatchesBySummonerName(String summonerName) throws InterruptedException {
         List<String> matchesIdList = getSummonerMatchesByNameAndCount(summonerName, 20);
         Match leagueInfo = getLeagueInfoFromMatchesList(summonerName);
-        return matchMapper.toMatchDto(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, 3));
+        return matchMapper.mapToMatchDtoFromMatch(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, 3));
     }
 
     public MatchDto getLast20MatchesBySummonerName(String summonerName) throws InterruptedException {
         List<String> matchesIdList = getSummonerMatchesByNameAndCount(summonerName, 50);
         Match leagueInfo = getLeagueInfoFromMatchesList(summonerName);
-        return matchMapper.toMatchDto(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, 20));
+        return matchMapper.mapToMatchDtoFromMatch(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, 20));
     }
 
     private Match getLastRankedMatchesDependsOnCount(Match leagueInfo, List<String> matchesIdList, int count) throws InterruptedException {

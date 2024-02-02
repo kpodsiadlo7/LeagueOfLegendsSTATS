@@ -15,8 +15,4 @@ public class RankDto {
     private int leaguePoints;
     private int wins;
     private int losses;
-    private boolean veteran;
-    private boolean inactive;
-    private boolean freshBlood;
-    private boolean hotStreak;
 }

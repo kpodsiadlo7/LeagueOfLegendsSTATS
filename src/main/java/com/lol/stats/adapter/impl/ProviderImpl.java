@@ -1,6 +1,10 @@
-package com.lol.stats.adapter;
+package com.lol.stats.adapter.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.lol.stats.adapter.mapper.ChampionMapper;
+import com.lol.stats.adapter.mapper.LeagueMapper;
+import com.lol.stats.adapter.mapper.RankMapper;
+import com.lol.stats.adapter.mapper.SummonerMapper;
 import com.lol.stats.domain.*;
 import com.lol.stats.model.Champion;
 import com.lol.stats.model.LeagueInfo;
@@ -8,7 +12,6 @@ import com.lol.stats.model.Rank;
 import com.lol.stats.model.SummonerInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -56,12 +59,12 @@ public class ProviderImpl implements Provider {
 
     @Override
     public List<Rank> getLeagueV4Info(final String summonerId) {
-        return rankMapper.fromListRankDto(summonerClient.getLeagueV4(summonerId, provideKey()));
+        return rankMapper.mapToRankListFromRankDtoList(summonerClient.getLeagueV4(summonerId, provideKey()));
     }
 
     @Override
     public List<Champion> getChampionsByPuuId(final String puuid) {
-        return championMapper.fromChampionDtoList(summonerClient.getChampions(puuid, provideKey()));
+        return championMapper.mapToChampionListFromChampionDtoList(summonerClient.getChampions(puuid, provideKey()));
     }
 
     @Override
@@ -71,7 +74,7 @@ public class ProviderImpl implements Provider {
 
     @Override
     public List<LeagueInfo> getLeagueInfoListBySummonerId(String summonerId) {
-        return leagueMapper.fromLeagueInfoDto(summonerClient.getLeagueInfoBySummonerId(summonerId, provideKey()));
+        return leagueMapper.mapToLeagueInfoListFromLeagueInfoDtoList(summonerClient.getLeagueInfoBySummonerId(summonerId, provideKey()));
     }
 
     @Override
