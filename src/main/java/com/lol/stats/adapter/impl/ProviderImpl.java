@@ -6,6 +6,9 @@ import com.lol.stats.adapter.mapper.LeagueMapper;
 import com.lol.stats.adapter.mapper.RankMapper;
 import com.lol.stats.adapter.mapper.SummonerMapper;
 import com.lol.stats.domain.*;
+import com.lol.stats.domain.client.DDragonClient;
+import com.lol.stats.domain.client.EuropeRiotClient;
+import com.lol.stats.domain.client.EUN1RiotClient;
 import com.lol.stats.model.Champion;
 import com.lol.stats.model.LeagueInfo;
 import com.lol.stats.model.Rank;
@@ -25,14 +28,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProviderImpl implements Provider {
 
-    private final SummonerClient summonerClient;
+    private final EUN1RiotClient eun1RiotClient;
     private final SummonerMapper summonerMapper;
     private final ChampionMapper championMapper;
     private final RankMapper rankMapper;
     private final LeagueMapper leagueMapper;
-    private final ClientLoLVersion clientLoLVersion;
-    private final MatchClient matchClient;
-    private final AllChampionClient allChampionClient;
+    private final EuropeRiotClient europeRiotClient;
+    private final DDragonClient dDragonClient;
 
     @Override
     public String provideKey() {
@@ -49,56 +51,56 @@ public class ProviderImpl implements Provider {
 
     @Override
     public SummonerInfo getSummonerInfo(final String summonerName) {
-        return summonerMapper.fromSummonerInfoDto(summonerClient.getSummonerByName(summonerName, provideKey()));
+        return summonerMapper.fromSummonerInfoDto(eun1RiotClient.getSummonerByName(summonerName, provideKey()));
     }
 
     @Override
     public String getLatestLoLVersion() {
-        return clientLoLVersion.getLolVersions()[0];
+        return dDragonClient.getLolVersions()[0];
     }
 
     @Override
     public List<Rank> getLeagueV4Info(final String summonerId) {
-        return rankMapper.mapToRankListFromRankDtoList(summonerClient.getLeagueV4(summonerId, provideKey()));
+        return rankMapper.mapToRankListFromRankDtoList(eun1RiotClient.getLeagueV4(summonerId, provideKey()));
     }
 
     @Override
     public List<Champion> getChampionsByPuuId(final String puuid) {
-        return championMapper.mapToChampionListFromChampionDtoList(summonerClient.getChampions(puuid, provideKey()));
+        return championMapper.mapToChampionListFromChampionDtoList(eun1RiotClient.getChampions(puuid, provideKey()));
     }
 
     @Override
     public List<String> getMatchesByPuuIdAndCount(final String puuid, final int count) {
-        return matchClient.getMatchesByPuuIdAndCount(puuid, count, provideKey());
+        return europeRiotClient.getMatchesByPuuIdAndCount(puuid, count, provideKey());
     }
 
     @Override
     public List<LeagueInfo> getLeagueInfoListBySummonerId(String summonerId) {
-        return leagueMapper.mapToLeagueInfoListFromLeagueInfoDtoList(summonerClient.getLeagueInfoBySummonerId(summonerId, provideKey()));
+        return leagueMapper.mapToLeagueInfoListFromLeagueInfoDtoList(eun1RiotClient.getLeagueInfoBySummonerId(summonerId, provideKey()));
     }
 
     @Override
     public JsonNode getExampleSummonerNameFromExistingGame() {
-        return summonerClient.getExampleSummonerNameFromRandomExistingGame(provideKey());
+        return eun1RiotClient.getExampleSummonerNameFromRandomExistingGame(provideKey());
     }
 
     @Override
     public JsonNode getAllChampionsDependsOnLoLVersion(String latestLoLVersion) {
-        return allChampionClient.getChampionById(latestLoLVersion);
+        return dDragonClient.getChampionById(latestLoLVersion);
     }
 
     @Override
     public JsonNode getInfoAboutMatchById(String matchId) {
-        return matchClient.getInfoAboutMatchById(matchId, provideKey());
+        return europeRiotClient.getInfoAboutMatchById(matchId, provideKey());
     }
 
     @Override
     public JsonNode getMatchInfoBySummonerId(String id) {
-        return summonerClient.getMatchInfoBySummonerId(id, provideKey());
+        return eun1RiotClient.getMatchInfoBySummonerId(id, provideKey());
     }
 
     @Override
     public JsonNode getSummonerSpells(String latestLoLVersion) {
-        return allChampionClient.getSummonerSpells(latestLoLVersion);
+        return dDragonClient.getSummonerSpells(latestLoLVersion);
     }
 }

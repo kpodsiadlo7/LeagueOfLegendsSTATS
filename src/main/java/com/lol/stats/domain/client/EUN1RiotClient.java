@@ -1,4 +1,4 @@
-package com.lol.stats.domain;
+package com.lol.stats.domain.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.lol.stats.dto.ChampionDto;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.util.List;
 
 @FeignClient(value = "SummonerInfo", url = "${api.riot.url}")
-public interface SummonerClient {
+public interface EUN1RiotClient {
 
     @GetMapping("/summoner/v4/summoners/by-name/{summonerName}?api_key={apiKey}")
     SummonerInfoDto getSummonerByName(@PathVariable String summonerName, @PathVariable final String apiKey);
