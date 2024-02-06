@@ -102,12 +102,12 @@ public class RiotFacade {
 
         // if the tagline is not null, we must collect the remaining data of the summoner using their puuId
         // if the tagline is null it's mean we are not looking name using '#'
-        if (summonerInfo.getTagLine() != null){
+        if (summonerInfo.getTagLine() != null) {
             summonerInfo = updateSummonerInfo(summonerInfo);
         }
 
         // if name is null it's mean summoner is not found
-        if(summonerInfo.getName() == null) return new SummonerInfo();
+        if (summonerInfo.getName() == null) return new SummonerInfo();
 
         return summonerInfo;
     }
@@ -175,7 +175,7 @@ public class RiotFacade {
 
                 String puuId = s.get("puuid").asText();
                 String name = s.get("summonerName").asText();
-                name = checkIfNameIsNotEmpty(name,puuId);
+                name = checkIfNameIsNotEmpty(name, puuId);
 
                 matchSummoner.setPuuid(puuId);
                 matchSummoner.setTeamId(s.get("teamId").asInt());
@@ -278,15 +278,7 @@ public class RiotFacade {
                 for (JsonNode m : matchJN.get("info").get("participants")) {
                     ChampMatch champMatch = new ChampMatch();
                     if (m.get("puuid").asText().equals(leagueInfo.getPuuid())) {
-                        champMatch.setMatchId(singleMatch);
-                        champMatch.setMatchChampName(m.get("championName").asText());
-                        champMatch.setChampionId(m.get("championId").asInt());
-                        champMatch.setAssists(m.get("assists").asInt());
-                        champMatch.setKda(m.get("challenges").get("kda").asInt());
-                        champMatch.setDeaths(m.get("deaths").asInt());
-                        champMatch.setKills(m.get("kills").asInt());
-                        champMatch.setLane(m.get("teamPosition").asText());
-                        champMatch.setDealtDamage(m.get("totalDamageDealtToChampions").asInt());
+                        champMatch = setChampMatch(singleMatch, m, champMatch);
                         switch (m.get("win").asText()) {
                             case "true" -> {
                                 champMatch.setWin("WYGRANA");
@@ -322,6 +314,19 @@ public class RiotFacade {
         return leagueInfo;
     }
 
+    private ChampMatch setChampMatch(String singleMatch, JsonNode m, ChampMatch champMatch) {
+        champMatch.setMatchId(singleMatch);
+        champMatch.setMatchChampName(m.get("championName").asText());
+        champMatch.setChampionId(m.get("championId").asInt());
+        champMatch.setAssists(m.get("assists").asInt());
+        champMatch.setKda(m.get("challenges").get("kda").asInt());
+        champMatch.setDeaths(m.get("deaths").asInt());
+        champMatch.setKills(m.get("kills").asInt());
+        champMatch.setLane(m.get("teamPosition").asText());
+        champMatch.setDealtDamage(m.get("totalDamageDealtToChampions").asInt());
+        return champMatch;
+    }
+
     private Match getLeagueInfoFromMatchesList(final String puuId) {
         SummonerInfo summonerInfo = provider.getSummonerByPuuId(puuId);
 
@@ -344,5 +349,33 @@ public class RiotFacade {
                 .rank(match.getRank())
                 .rankColor(match.getRankColor())
                 .matches(new ArrayList<>()).build();
+    }
+
+    public List<ChampMatch> getPreviousMatchByMatchId(String matchId) {
+        ChampMatch champMatch = new ChampMatch();
+        TeamObjective teamObjective = new TeamObjective();
+        List<ChampMatch> matchList = new ArrayList<>();
+        JsonNode jsonNode = provider.getInfoAboutMatchById(matchId);
+        if (jsonNode == null) return null;
+
+        JsonNode info = jsonNode.get("info");
+        if (info == null) return null;
+
+        for (var summoner : info.get("participants")) {
+            matchList.add(setChampMatch(matchId, summoner, champMatch));
+        }
+
+        for (var objectives : info.get("teams")) {
+            if (objectives.has("objectives")) {
+                var objective = objectives.get("objectives");
+                if (objective.has("baron")) teamObjective.setBaronKills(objective.get("baron").get("kills").asText());
+                if (objective.has("champion")) teamObjective.setChampionKills(objective.get("champion").get("kills").asText());
+                if (objective.has("dragon")) teamObjective.setDragonKills(objective.get("dragon").get("kills").asText());
+                if (objectives.has("teamId")) teamObjective.setTeamId(objectives.get("teamId").asInt());
+            }
+            log.info(teamObjective.toString());
+        }
+
+        return matchList;
     }
 }
