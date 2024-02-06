@@ -11,13 +11,13 @@ public class PreviousMatchInfoMapper {
 
     private final ChampMatchMapper champMatchMapper;
     private final TeamObjectiveMapper teamObjectiveMapper;
-    private final MatchMapper matchMapper;
+    private final MatchInfoMapper matchInfoMapper;
 
     public PreviousMatchInfoDto toDto(PreviousMatchInfo previousMatchInfo) {
         return new PreviousMatchInfoDto(
                 champMatchMapper.toDtoList(previousMatchInfo.getMatchList()),
                 teamObjectiveMapper.toDtoList(previousMatchInfo.getTeamObjective()),
-                matchMapper.mapToMatchInfoDtoFromMatchInfo(previousMatchInfo.getMatchInfo())
+                matchInfoMapper.toDto(previousMatchInfo.getMatchInfo())
         );
     }
 }

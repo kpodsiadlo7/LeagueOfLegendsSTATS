@@ -1,6 +1,7 @@
 package com.lol.stats.domain;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.lol.stats.adapter.mapper.MatchInfoMapper;
 import com.lol.stats.adapter.mapper.MatchMapper;
 import com.lol.stats.adapter.mapper.PreviousMatchInfoMapper;
 import com.lol.stats.adapter.mapper.SummonerMapper;
@@ -24,6 +25,7 @@ import static java.lang.Thread.sleep;
 public class RiotFacade {
 
     private final PreviousMatchInfoMapper previousMatchInfoMapper;
+    private final MatchInfoMapper matchInfoMapper;
     private final SummonerMapper summonerMapper;
     private final MatchMapper matchMapper;
     private final Provider provider;
@@ -172,7 +174,7 @@ public class RiotFacade {
         if (!matchInfo.isEmpty() && !matchInfo.get("participants").isEmpty()) {
             setInfoAboutSummoners(matchInfo, allInfoAboutMatch, summonerInfo);
         }
-        return matchMapper.mapToMatchInfoDtoFromMatchInfo(allInfoAboutMatch);
+        return matchInfoMapper.toDto(allInfoAboutMatch);
     }
 
     private void setInfoAboutSummoners(JsonNode matchInfo, MatchInfo allInfoAboutMatch, SummonerInfo summonerInfo) {

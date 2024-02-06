@@ -31,6 +31,4 @@ public class ChampMatchMapper {
                 champMatch.getTeamId()
         );
     }
-
-
 }

@@ -36,46 +36,4 @@ public class MatchMapper {
                 champMatchMapper.toDtoList(match.getMatches())
         );
     }
-
-    public MatchInfoDto mapToMatchInfoDtoFromMatchInfo(final MatchInfo matchInfo) {
-        return new MatchInfoDto(
-                matchInfo.getUserTeam(),
-                matchInfo.getGameMode(),
-                mapToBannedChampionDtoListFromBannedChampionList(matchInfo.getBannedChampions()),
-                mapToMatchSummonerDtoListFromMatchSummonerList(matchInfo.getSummoners())
-        );
-    }
-
-    private List<MatchSummonerDto> mapToMatchSummonerDtoListFromMatchSummonerList(final List<MatchSummoner> summoners) {
-        return summoners.stream()
-                .map(this::mapToMatchSummonerDtoFromMatchSummoner)
-                .collect(Collectors.toList());
-    }
-
-    private MatchSummonerDto mapToMatchSummonerDtoFromMatchSummoner(final MatchSummoner matchSummoner) {
-        return new MatchSummonerDto(
-                matchSummoner.getPuuid(),
-                matchSummoner.getTeamId(),
-                matchSummoner.getChampionId(),
-                matchSummoner.getSummonerName(),
-                matchSummoner.getSummonerId(),
-                matchSummoner.getRank(),
-                matchSummoner.getRankColor(),
-                matchSummoner.getChampName(),
-                matchSummoner.getSpellName1(),
-                matchSummoner.getSpellName2()
-        );
-    }
-
-    private List<BannedChampionDto> mapToBannedChampionDtoListFromBannedChampionList(List<BannedChampion> bannedChampions) {
-        return bannedChampions.stream()
-                .map(this::mapToBannedChampionDtoFromBannedChampion)
-                .collect(Collectors.toList());
-    }
-
-    private BannedChampionDto mapToBannedChampionDtoFromBannedChampion(final BannedChampion bannedChampion) {
-        return new BannedChampionDto(
-                bannedChampion.getName()
-        );
-    }
 }
