@@ -12,8 +12,8 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "https://kpodsiadlo7.github.io")
-//@CrossOrigin(origins = "http://127.0.0.1:3000/")
+//@CrossOrigin(origins = "https://kpodsiadlo7.github.io")
+@CrossOrigin(origins = "http://127.0.0.1:3000/")
 public class Controller {
 
     private final RiotFacade riotFacade;
@@ -37,12 +37,12 @@ public class Controller {
 
     @GetMapping("/last3matches")
     MatchDto getLast3MatchesBySummonerName(@RequestParam String summonerName) throws InterruptedException {
-        return riotFacade.getLast3MatchesBySummonerName(summonerName);
+        return riotFacade.getLastMatchesByPuuIdAndCounts(summonerName,20,3);
     }
 
     @GetMapping("/last20matches")
     MatchDto getLast20MatchesBySummonerName(@RequestParam String summonerName) throws InterruptedException {
-        return riotFacade.getLast20MatchesBySummonerName(summonerName);
+        return riotFacade.getLastMatchesByPuuIdAndCounts(summonerName,50,20);
     }
 
     @GetMapping("/randomMatch")

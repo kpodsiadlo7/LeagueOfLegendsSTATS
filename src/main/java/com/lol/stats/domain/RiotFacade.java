@@ -152,8 +152,7 @@ public class RiotFacade {
         };
     }
 
-    public List<String> getSummonerMatchesByNameAndCount(String summonerName, int count) {
-        String puuId = getSummonerInfo(summonerName).getPuuid();
+    public List<String> getSummonerMatchesByNameAndCount(final String puuId, final int count) {
         return provider.getMatchesByPuuIdAndCount(puuId, count);
     }
 
@@ -250,16 +249,11 @@ public class RiotFacade {
     }
 
 
-    public MatchDto getLast3MatchesBySummonerName(String summonerName) throws InterruptedException {
-        List<String> matchesIdList = getSummonerMatchesByNameAndCount(summonerName, 20);
+    public MatchDto getLastMatchesByPuuIdAndCounts(final String summonerName, final int matchesListCount, final int rankedCount) throws InterruptedException {
+        List<String> matchesIdList = getSummonerMatchesByNameAndCount(summonerName, matchesListCount);
         Match leagueInfo = getLeagueInfoFromMatchesList(summonerName);
-        return matchMapper.mapToMatchDtoFromMatch(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, 3));
-    }
 
-    public MatchDto getLast20MatchesBySummonerName(String summonerName) throws InterruptedException {
-        List<String> matchesIdList = getSummonerMatchesByNameAndCount(summonerName, 50);
-        Match leagueInfo = getLeagueInfoFromMatchesList(summonerName);
-        return matchMapper.mapToMatchDtoFromMatch(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, 20));
+        return matchMapper.mapToMatchDtoFromMatch(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, rankedCount));
     }
 
     private Match getLastRankedMatchesDependsOnCount(Match leagueInfo, List<String> matchesIdList, int count) throws InterruptedException {
@@ -316,8 +310,9 @@ public class RiotFacade {
         return leagueInfo;
     }
 
-    private Match getLeagueInfoFromMatchesList(String summonerName) {
-        SummonerInfo summonerInfo = getSummonerInfo(summonerName);
+    private Match getLeagueInfoFromMatchesList(final String puuId) {
+        SummonerInfo summonerInfo = provider.getSummonerByPuuId(puuId);
+
         String summonerId = summonerInfo.getId();
         LeagueInfo leagueInfo = getLeagueInfo(summonerId);
         Match match = setRankedSoloRank(getSummonerRank(summonerId));
