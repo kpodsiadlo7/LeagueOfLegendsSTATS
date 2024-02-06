@@ -5,6 +5,7 @@ import com.lol.stats.dto.MatchDto;
 import com.lol.stats.dto.MatchInfoDto;
 import com.lol.stats.dto.SummonerDto;
 import com.lol.stats.model.ChampMatch;
+import com.lol.stats.model.PreviousMatchInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,7 +53,7 @@ public class Controller {
     }
 
     @GetMapping("/previous-match")
-    List<ChampMatch> getPreviousMatchByMatchId(@RequestParam final String matchId){
+    PreviousMatchInfo getPreviousMatchByMatchId(@RequestParam final String matchId){
         return riotFacade.getPreviousMatchByMatchId(matchId);
     }
 }

@@ -281,13 +281,13 @@ public class RiotFacade {
                         champMatch = setChampMatch(singleMatch, m, champMatch);
                         switch (m.get("win").asText()) {
                             case "true" -> {
-                                champMatch.setWin("WYGRANA");
+                                champMatch.setWin(true);
                                 champMatch.setWinColor("green");
                                 wins++;
                             }
 
                             case "false" -> {
-                                champMatch.setWin("PRZEGRANA");
+                                champMatch.setWin(false);
                                 champMatch.setWinColor("red");
                                 losses++;
                             }
@@ -325,6 +325,11 @@ public class RiotFacade {
         champMatch.setLane(m.get("teamPosition").asText());
         champMatch.setDealtDamage(m.get("totalDamageDealtToChampions").asInt());
         champMatch.setTeamId(m.get("teamId").asInt());
+        if (m.get("win").asBoolean()) {
+            champMatch.setWin(true);
+        } else {
+            champMatch.setWin(false);
+        }
         return champMatch;
     }
 
@@ -352,9 +357,10 @@ public class RiotFacade {
                 .matches(new ArrayList<>()).build();
     }
 
-    public List<ChampMatch> getPreviousMatchByMatchId(String matchId) {
+    public PreviousMatchInfo getPreviousMatchByMatchId(String matchId) {
         TeamObjective teamObjective = new TeamObjective();
         List<ChampMatch> matchList = new ArrayList<>();
+        PreviousMatchInfo previousMatchInfo = new PreviousMatchInfo();
         JsonNode jsonNode = provider.getInfoAboutMatchById(matchId);
         if (jsonNode == null) return null;
 
@@ -377,6 +383,8 @@ public class RiotFacade {
             log.info(teamObjective.toString());
         }
 
-        return matchList;
+        previousMatchInfo.setMatchList(matchList);
+        previousMatchInfo.setTeamObjective(teamObjective);
+        return previousMatchInfo;
     }
 }

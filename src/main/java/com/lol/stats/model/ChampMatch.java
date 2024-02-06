@@ -19,7 +19,7 @@ public class ChampMatch {
     private int kills;
     private String lane;
     private int dealtDamage;
-    private String win;
+    private boolean win;
     private String winColor;
     private int teamId;
 }

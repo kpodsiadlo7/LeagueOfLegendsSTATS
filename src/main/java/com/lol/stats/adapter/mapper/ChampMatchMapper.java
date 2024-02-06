@@ -26,7 +26,7 @@ public class ChampMatchMapper {
                 champMatch.getKills(),
                 champMatch.getLane(),
                 champMatch.getDealtDamage(),
-                champMatch.getWin(),
+                champMatch.isWin(),
                 champMatch.getWinColor(),
                 champMatch.getTeamId()
         );
