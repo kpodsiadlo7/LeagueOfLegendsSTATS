@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class MatchMapper {
 
     private final LeagueMapper leagueMapper;
-    private final MatchChampMapper matchChampMapper;
+    private final ChampMatchMapper champMatchMapper;
 
     public MatchDto mapToMatchDtoFromMatch(final Match match) {
         return new MatchDto(
@@ -34,7 +34,7 @@ public class MatchMapper {
                 match.getRankColor(),
                 match.getWins(),
                 match.getLosses(),
-                matchChampMapper.mapToChampMatchDtoListFromChampMatchList(match.getMatches())
+                champMatchMapper.mapToChampMatchDtoListFromChampMatchList(match.getMatches())
         );
     }
 

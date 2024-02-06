@@ -324,6 +324,7 @@ public class RiotFacade {
         champMatch.setKills(m.get("kills").asInt());
         champMatch.setLane(m.get("teamPosition").asText());
         champMatch.setDealtDamage(m.get("totalDamageDealtToChampions").asInt());
+        champMatch.setTeamId(m.get("teamId").asInt());
         return champMatch;
     }
 
@@ -352,7 +353,6 @@ public class RiotFacade {
     }
 
     public List<ChampMatch> getPreviousMatchByMatchId(String matchId) {
-        ChampMatch champMatch = new ChampMatch();
         TeamObjective teamObjective = new TeamObjective();
         List<ChampMatch> matchList = new ArrayList<>();
         JsonNode jsonNode = provider.getInfoAboutMatchById(matchId);
@@ -362,6 +362,7 @@ public class RiotFacade {
         if (info == null) return null;
 
         for (var summoner : info.get("participants")) {
+            ChampMatch champMatch = new ChampMatch();
             matchList.add(setChampMatch(matchId, summoner, champMatch));
         }
 

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class MatchChampMapper {
+public class ChampMatchMapper {
     public List<ChampMatchDto> mapToChampMatchDtoListFromChampMatchList(final List<ChampMatch> matches) {
         return matches.stream()
                 .map(this::mapToChampMatchDtoFromMatchChamp)
@@ -27,7 +27,8 @@ public class MatchChampMapper {
                 champMatch.getLane(),
                 champMatch.getDealtDamage(),
                 champMatch.getWin(),
-                champMatch.getWinColor()
+                champMatch.getWinColor(),
+                champMatch.getTeamId()
         );
     }
 

@@ -21,4 +21,5 @@ public class ChampMatch {
     private int dealtDamage;
     private String win;
     private String winColor;
+    private int teamId;
 }
