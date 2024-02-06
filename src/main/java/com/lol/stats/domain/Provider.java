@@ -33,4 +33,6 @@ public interface Provider {
     JsonNode getMatchInfoBySummonerId(final String id);
 
     JsonNode getSummonerSpells(final String latestLoLVersion);
+
+    SummonerInfo getSummonerFromAccountData(final String puuId);
 }

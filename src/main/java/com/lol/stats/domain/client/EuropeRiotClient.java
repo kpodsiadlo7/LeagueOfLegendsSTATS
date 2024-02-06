@@ -19,4 +19,7 @@ public interface EuropeRiotClient {
 
     @GetMapping("riot/account/v1/accounts/by-riot-id/{summonerName}/{summonerHash}?api_key={apiKey}")
     SummonerInfoDto getSummonerByNameAndHash(@PathVariable final String summonerName, @PathVariable final String summonerHash, @PathVariable  final String apiKey);
+
+    @GetMapping("/riot/account/v1/accounts/by-puuid/{puuId}?api_key={apiKey}")
+    SummonerInfo getSummonerByPuuIdFromAccountData(@PathVariable final String puuId, @PathVariable final String apiKey);
 }

@@ -173,10 +173,14 @@ public class RiotFacade {
                 MatchSummoner matchSummoner = new MatchSummoner();
                 Match match = setRankedSoloRank(ranks);
 
-                matchSummoner.setPuuid(s.get("puuid").asText());
+                String puuId = s.get("puuid").asText();
+                String name = s.get("summonerName").asText();
+                name = checkIfNameIsNotEmpty(name,puuId);
+
+                matchSummoner.setPuuid(puuId);
                 matchSummoner.setTeamId(s.get("teamId").asInt());
                 matchSummoner.setChampionId(s.get("championId").asInt());
-                matchSummoner.setSummonerName(s.get("summonerName").asText());
+                matchSummoner.setSummonerName(name);
                 matchSummoner.setSummonerId(s.get("summonerId").asText());
                 matchSummoner.setRank(match.getRank());
                 matchSummoner.setRankColor(match.getRankColor());
@@ -197,6 +201,13 @@ public class RiotFacade {
             allInfoAboutMatch.setGameMode(matchInfo.get("gameMode").asText());
         }
         return matchMapper.mapToMatchInfoDtoFromMatchInfo(allInfoAboutMatch);
+    }
+
+    private String checkIfNameIsNotEmpty(final String name, final String puuId) {
+        if (!name.isEmpty()) return name;
+        log.warn("empty nick");
+        SummonerInfo summonerInfo = provider.getSummonerFromAccountData(puuId);
+        return summonerInfo == null ? name : summonerInfo.getGameName();
     }
 
 

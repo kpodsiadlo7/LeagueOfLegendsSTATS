@@ -62,13 +62,14 @@ public class ProviderImpl implements Provider {
     }
 
     @Override
-    public SummonerInfo getSummonerByPuuId(String puuId) {
+    public SummonerInfo getSummonerByPuuId(final String puuId) {
         return summonerInfoMapper.fromSummonerInfoDto(eun1RiotClient.getSummonerByPuuId(puuId,provideKey()));
     }
 
     @Override
     public String getLatestLoLVersion() {
-        return dDragonClient.getLolVersions()[0];
+        String[] version = dDragonClient.getLolVersions();
+        return version.length > 0 ? version[0] : null;
     }
 
     @Override
@@ -87,7 +88,7 @@ public class ProviderImpl implements Provider {
     }
 
     @Override
-    public List<LeagueInfo> getLeagueInfoListBySummonerId(String summonerId) {
+    public List<LeagueInfo> getLeagueInfoListBySummonerId(final String summonerId) {
         return leagueMapper.mapToLeagueInfoListFromLeagueInfoDtoList(eun1RiotClient.getLeagueInfoBySummonerId(summonerId, provideKey()));
     }
 
@@ -97,22 +98,27 @@ public class ProviderImpl implements Provider {
     }
 
     @Override
-    public JsonNode getAllChampionsDependsOnLoLVersion(String latestLoLVersion) {
+    public JsonNode getAllChampionsDependsOnLoLVersion(final String latestLoLVersion) {
         return dDragonClient.getChampionById(latestLoLVersion);
     }
 
     @Override
-    public JsonNode getInfoAboutMatchById(String matchId) {
+    public JsonNode getInfoAboutMatchById(final String matchId) {
         return europeRiotClient.getInfoAboutMatchById(matchId, provideKey());
     }
 
     @Override
-    public JsonNode getMatchInfoBySummonerId(String id) {
+    public JsonNode getMatchInfoBySummonerId(final String id) {
         return eun1RiotClient.getMatchInfoBySummonerId(id, provideKey());
     }
 
     @Override
-    public JsonNode getSummonerSpells(String latestLoLVersion) {
+    public JsonNode getSummonerSpells(final String latestLoLVersion) {
         return dDragonClient.getSummonerSpells(latestLoLVersion);
+    }
+
+    @Override
+    public SummonerInfo getSummonerFromAccountData(final String puuId) {
+        return europeRiotClient.getSummonerByPuuIdFromAccountData(puuId,provideKey());
     }
 }
