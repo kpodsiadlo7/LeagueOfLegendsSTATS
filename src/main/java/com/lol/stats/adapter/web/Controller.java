@@ -19,30 +19,30 @@ public class Controller {
     private final RiotFacade riotFacade;
 
     @GetMapping
-    SummonerDto getSummonerByName(@RequestParam String summonerName) {
+    SummonerDto getSummonerByName(@RequestParam final String summonerName) {
         return riotFacade.getSummonerInfoByName(summonerName);
     }
 
     @GetMapping("/matches")
     List<String> getSummonerMatchesByNameAndCount(
-            @RequestParam String summonerName,
-            @RequestParam int count) throws IOException, InterruptedException {
+            @RequestParam final String summonerName,
+            @RequestParam final int count) throws IOException, InterruptedException {
         return riotFacade.getSummonerMatchesByNameAndCount(summonerName, count);
     }
 
     @GetMapping("/matchInfo")
-    MatchInfoDto getMatchInfoBySummonerName(@RequestParam String summonerName) {
+    MatchInfoDto getMatchInfoBySummonerName(@RequestParam final String summonerName) {
         return riotFacade.getInfoAboutAllSummonerInActiveGame(summonerName);
     }
 
     @GetMapping("/last3matches")
-    MatchDto getLast3MatchesBySummonerName(@RequestParam String summonerName) throws InterruptedException {
-        return riotFacade.getLastMatchesByPuuIdAndCounts(summonerName,20,3);
+    MatchDto getLast3MatchesBySummonerName(@RequestParam final String puuId) throws InterruptedException {
+        return riotFacade.getLastMatchesByPuuIdAndCounts(puuId,20,3);
     }
 
     @GetMapping("/last20matches")
-    MatchDto getLast20MatchesBySummonerName(@RequestParam String summonerName) throws InterruptedException {
-        return riotFacade.getLastMatchesByPuuIdAndCounts(summonerName,50,20);
+    MatchDto getLast20MatchesBySummonerName(@RequestParam final String puuId) throws InterruptedException {
+        return riotFacade.getLastMatchesByPuuIdAndCounts(puuId,50,20);
     }
 
     @GetMapping("/randomMatch")

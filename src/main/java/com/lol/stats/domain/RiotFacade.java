@@ -260,9 +260,9 @@ public class RiotFacade {
     }
 
 
-    public MatchDto getLastMatchesByPuuIdAndCounts(final String summonerName, final int matchesListCount, final int rankedCount) throws InterruptedException {
-        List<String> matchesIdList = getSummonerMatchesByNameAndCount(summonerName, matchesListCount);
-        Match leagueInfo = getLeagueInfoFromMatchesList(summonerName);
+    public MatchDto getLastMatchesByPuuIdAndCounts(final String puuId, final int matchesListCount, final int rankedCount) throws InterruptedException {
+        List<String> matchesIdList = getSummonerMatchesByNameAndCount(puuId, matchesListCount);
+        Match leagueInfo = getLeagueInfoFromMatchesList(puuId);
 
         return matchMapper.mapToMatchDtoFromMatch(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, rankedCount));
     }
@@ -278,6 +278,7 @@ public class RiotFacade {
                 for (JsonNode m : matchJN.get("info").get("participants")) {
                     ChampMatch champMatch = new ChampMatch();
                     if (m.get("puuid").asText().equals(leagueInfo.getPuuid())) {
+                        champMatch.setMatchId(singleMatch);
                         champMatch.setMatchChampName(m.get("championName").asText());
                         champMatch.setChampionId(m.get("championId").asInt());
                         champMatch.setAssists(m.get("assists").asInt());

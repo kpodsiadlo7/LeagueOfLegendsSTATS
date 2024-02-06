@@ -17,6 +17,7 @@ public class MatchChampMapper {
 
     private ChampMatchDto mapToChampMatchDtoFromMatchChamp(final ChampMatch champMatch) {
         return new ChampMatchDto(
+                champMatch.getMatchId(),
                 champMatch.getMatchChampName(),
                 champMatch.getChampionId(),
                 champMatch.getAssists(),

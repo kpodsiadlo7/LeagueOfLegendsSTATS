@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChampMatch {
+    private String matchId;
     private String matchChampName;
     private int championId;
     private int assists;
