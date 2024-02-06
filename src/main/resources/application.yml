@@ -9,12 +9,14 @@ spring:
       enabled: true
       path: /h2-console
 
-api:
+eun1:
   riot:
     url: "https://eun1.api.riotgames.com/lol"
-masala:
-  puuid: "zZdUMg3S_AZOxr8sZ4eVo-ge5MKWsA6L2GY8xWHgyi7un2XfRbNvcytY4Zi2iDila9BuyEbUxBEfMg"
 
 ddragon:
-  url: "https://ddragon.leagueoflegends.com/cdn/"
+  url: "https://ddragon.leagueoflegends.com/"
   version: "https://ddragon.leagueoflegends.com/api/versions.json"
+
+europe:
+  riot:
+    url: "https://europe.api.riotgames.com/"

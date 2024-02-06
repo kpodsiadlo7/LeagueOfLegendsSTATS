@@ -12,24 +12,25 @@ public interface Provider {
     String provideKey();
 
     SummonerInfo getSummonerInfo(final String summonerName);
+    SummonerInfo getSummonerByPuuId(final String puuId);
 
     String getLatestLoLVersion();
 
     List<Rank> getLeagueV4Info(final String summonerId);
 
-    List<Champion> getChampionsByPuuId(final String puuid);
+    List<Champion> getChampionsByPuuId(final String puuId);
 
-    List<String> getMatchesByPuuIdAndCount(final String puuid, final int count);
+    List<String> getMatchesByPuuIdAndCount(final String puuId, final int count);
 
-    List<LeagueInfo> getLeagueInfoListBySummonerId(String summonerId);
+    List<LeagueInfo> getLeagueInfoListBySummonerId(final String summonerId);
 
     JsonNode getExampleSummonerNameFromExistingGame();
 
-    JsonNode getAllChampionsDependsOnLoLVersion(String latestLoLVersion);
+    JsonNode getAllChampionsDependsOnLoLVersion(final String latestLoLVersion);
 
-    JsonNode getInfoAboutMatchById(String matchId);
+    JsonNode getInfoAboutMatchById(final String matchId);
 
-    JsonNode getMatchInfoBySummonerId(String id);
+    JsonNode getMatchInfoBySummonerId(final String id);
 
-    JsonNode getSummonerSpells(String latestLoLVersion);
+    JsonNode getSummonerSpells(final String latestLoLVersion);
 }

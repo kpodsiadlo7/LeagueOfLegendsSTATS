@@ -1,10 +1,7 @@
 package com.lol.stats.adapter.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lol.stats.adapter.mapper.ChampionMapper;
-import com.lol.stats.adapter.mapper.LeagueMapper;
-import com.lol.stats.adapter.mapper.RankMapper;
-import com.lol.stats.adapter.mapper.SummonerMapper;
+import com.lol.stats.adapter.mapper.*;
 import com.lol.stats.domain.*;
 import com.lol.stats.domain.client.DDragonClient;
 import com.lol.stats.domain.client.EuropeRiotClient;
@@ -29,7 +26,7 @@ import java.util.List;
 public class ProviderImpl implements Provider {
 
     private final EUN1RiotClient eun1RiotClient;
-    private final SummonerMapper summonerMapper;
+    private final SummonerInfoMapper summonerInfoMapper;
     private final ChampionMapper championMapper;
     private final RankMapper rankMapper;
     private final LeagueMapper leagueMapper;
@@ -51,7 +48,22 @@ public class ProviderImpl implements Provider {
 
     @Override
     public SummonerInfo getSummonerInfo(final String summonerName) {
-        return summonerMapper.fromSummonerInfoDto(eun1RiotClient.getSummonerByName(summonerName, provideKey()));
+        if(summonerName == null || summonerName.isEmpty()) return new SummonerInfo();
+
+        // if we are looking for by name with #hash, we need to use europeRiotClient
+        String[] nameAndHash = summonerName.split("#");
+        if(nameAndHash.length == 2){
+            // nameAndHash[0] <- summonerName, nameAndHash[1] <- summonerHash
+            return summonerInfoMapper.fromSummonerInfoDto(
+                    europeRiotClient.getSummonerByNameAndHash(nameAndHash[0],nameAndHash[1],provideKey()));
+        }
+        // we are looking for by name without #hash
+        return summonerInfoMapper.fromSummonerInfoDto(eun1RiotClient.getSummonerByName(summonerName, provideKey()));
+    }
+
+    @Override
+    public SummonerInfo getSummonerByPuuId(String puuId) {
+        return summonerInfoMapper.fromSummonerInfoDto(eun1RiotClient.getSummonerByPuuId(puuId,provideKey()));
     }
 
     @Override
@@ -65,13 +77,13 @@ public class ProviderImpl implements Provider {
     }
 
     @Override
-    public List<Champion> getChampionsByPuuId(final String puuid) {
-        return championMapper.mapToChampionListFromChampionDtoList(eun1RiotClient.getChampions(puuid, provideKey()));
+    public List<Champion> getChampionsByPuuId(final String puuId) {
+        return championMapper.mapToChampionListFromChampionDtoList(eun1RiotClient.getChampions(puuId, provideKey()));
     }
 
     @Override
-    public List<String> getMatchesByPuuIdAndCount(final String puuid, final int count) {
-        return europeRiotClient.getMatchesByPuuIdAndCount(puuid, count, provideKey());
+    public List<String> getMatchesByPuuIdAndCount(final String puuId, final int count) {
+        return europeRiotClient.getMatchesByPuuIdAndCount(puuId, count, provideKey());
     }
 
     @Override

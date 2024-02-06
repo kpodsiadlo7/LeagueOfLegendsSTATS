@@ -14,7 +14,9 @@ public class SummonerInfo {
     private String id;
     private String accountId;
     private String puuid;
+    private String tagLine;
     private String name;
+    private String gameName;
     private int profileIconId;
     private int summonerLevel;
 }

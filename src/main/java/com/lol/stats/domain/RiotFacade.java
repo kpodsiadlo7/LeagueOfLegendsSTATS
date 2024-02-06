@@ -25,7 +25,7 @@ public class RiotFacade {
     private final MatchMapper matchMapper;
     private final Provider provider;
 
-    public SummonerDto getSummonerInfoByName(final String summonerName) throws InterruptedException {
+    public SummonerDto getSummonerInfoByName(final String summonerName) {
         SummonerInfo summonerInfo = getSummonerInfo(summonerName);
 
         List<Rank> ranks = getSummonerRank(summonerInfo.getId());
@@ -33,6 +33,19 @@ public class RiotFacade {
         String latestLoLVersion = getLatestLoLVersion();
 
         return summonerMapper.mapToSummonerDtoFromSummoner(bakeSummoner(summonerInfo, ranks, champion, latestLoLVersion));
+    }
+
+    private SummonerInfo updateSummonerInfo(SummonerInfo summonerInfo) {
+        SummonerInfo summonerData = provider.getSummonerByPuuId(summonerInfo.getPuuid());
+        return SummonerInfo.builder()
+                .id(summonerData.getId())
+                .accountId(summonerData.getAccountId())
+                .puuid(summonerData.getPuuid())
+                .tagLine(summonerInfo.getTagLine())
+                .name(summonerInfo.getGameName())
+                .gameName(summonerInfo.getGameName())
+                .profileIconId(summonerData.getProfileIconId())
+                .summonerLevel(summonerData.getSummonerLevel()).build();
     }
 
     private Summoner bakeSummoner(final SummonerInfo summonerInfo, final List<Rank> ranks, final Champion champion, final String latestLoLVersion) {
@@ -84,7 +97,19 @@ public class RiotFacade {
     }
 
     private SummonerInfo getSummonerInfo(String summonerName) {
-        return provider.getSummonerInfo(summonerName);
+        SummonerInfo summonerInfo = provider.getSummonerInfo(summonerName);
+        if (summonerInfo == null) return new SummonerInfo();
+
+        // if the tagline is not null, we must collect the remaining data of the summoner using their puuId
+        // if the tagline is null it's mean we are not looking name using '#'
+        if (summonerInfo.getTagLine() != null){
+            summonerInfo = updateSummonerInfo(summonerInfo);
+        }
+
+        // if name is null it's mean summoner is not found
+        if(summonerInfo.getName() == null) return new SummonerInfo();
+
+        return summonerInfo;
     }
 
     private List<Rank> getSummonerRank(final String summonerId) {

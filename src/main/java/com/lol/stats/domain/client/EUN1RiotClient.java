@@ -11,14 +11,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
-@FeignClient(value = "SummonerInfo", url = "${api.riot.url}")
+@FeignClient(value = "SummonerInfo", url = "${eun1.riot.url}")
 public interface EUN1RiotClient {
 
     @GetMapping("/summoner/v4/summoners/by-name/{summonerName}?api_key={apiKey}")
     SummonerInfoDto getSummonerByName(@PathVariable String summonerName, @PathVariable final String apiKey);
 
     @GetMapping("/summoner/v4/summoners/by-puuid/{puuId}?api_key={apiKey}")
-    SummonerInfoDto getSummonerByPuuid(@PathVariable String puuId, @PathVariable final String apiKey);
+    SummonerInfoDto getSummonerByPuuId(@PathVariable String puuId, @PathVariable final String apiKey);
 
     @GetMapping("/spectator/v4/active-games/by-summoner/{summonerId}?api_key={apiKey}")
     JsonNode getActiveGameInfo(@PathVariable String summonerId, @PathVariable final String apiKey);

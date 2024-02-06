@@ -5,7 +5,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(value = "RiotAllChampions", url = "https://ddragon.leagueoflegends.com/")
+@FeignClient(value = "RiotAllChampions", url = "${ddragon.url}")
 public interface DDragonClient {
 
     @GetMapping("/api/versions.json")

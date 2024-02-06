@@ -19,7 +19,7 @@ public class Controller {
     private final RiotFacade riotFacade;
 
     @GetMapping
-    SummonerDto getSummonerByName(@RequestParam String summonerName) throws InterruptedException {
+    SummonerDto getSummonerByName(@RequestParam String summonerName) {
         return riotFacade.getSummonerInfoByName(summonerName);
     }
 

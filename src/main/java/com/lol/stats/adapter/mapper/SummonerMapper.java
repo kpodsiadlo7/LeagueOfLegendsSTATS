@@ -13,16 +13,6 @@ public class SummonerMapper {
 
     private final RankMapper rankMapper;
 
-    public SummonerInfo fromSummonerInfoDto(final SummonerInfoDto summonerInfoDto) {
-        return SummonerInfo.builder()
-                .id(summonerInfoDto.getId())
-                .accountId(summonerInfoDto.getAccountId())
-                .puuid(summonerInfoDto.getPuuid())
-                .name(summonerInfoDto.getName())
-                .profileIconId(summonerInfoDto.getProfileIconId())
-                .summonerLevel(summonerInfoDto.getSummonerLevel()).build();
-    }
-
     public SummonerDto mapToSummonerDtoFromSummoner(final Summoner summoner) {
         return new SummonerDto(
                 summoner.getId(),
