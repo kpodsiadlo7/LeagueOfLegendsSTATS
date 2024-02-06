@@ -167,40 +167,27 @@ public class RiotFacade {
         MatchInfo allInfoAboutMatch = MatchInfo.builder().summoners(new ArrayList<>()).bannedChampions(new ArrayList<>()).build();
 
         if (!matchInfo.isEmpty() && !matchInfo.get("participants").isEmpty()) {
-            String userTeam = null;
-            for (JsonNode s : matchInfo.get("participants")) {
-                List<Rank> ranks = getSummonerRank(s.get("summonerId").asText());
-                MatchSummoner matchSummoner = new MatchSummoner();
-                Match match = setRankedSoloRank(ranks);
-
-                String puuId = s.get("puuid").asText();
-                String name = s.get("summonerName").asText();
-                name = checkIfNameIsNotEmpty(name, puuId);
-
-                matchSummoner.setPuuid(puuId);
-                matchSummoner.setTeamId(s.get("teamId").asInt());
-                matchSummoner.setChampionId(s.get("championId").asInt());
-                matchSummoner.setSummonerName(name);
-                matchSummoner.setSummonerId(s.get("summonerId").asText());
-                matchSummoner.setRank(match.getRank());
-                matchSummoner.setRankColor(match.getRankColor());
-                matchSummoner.setChampName(getChampionById(s.get("championId").asInt(), getLatestLoLVersion()));
-                matchSummoner.setSpellName1(getSpellNameBySpellId(s.get("spell1Id").asText()));
-                matchSummoner.setSpellName2(getSpellNameBySpellId(s.get("spell2Id").asText()));
-
-                allInfoAboutMatch.getSummoners().add(matchSummoner);
-
-                if (s.get("summonerId").asText().equals(summonerInfo.getId()))
-                    userTeam = s.get("teamId").asText();
-            }
-
-            for (JsonNode champ : matchInfo.get("bannedChampions")) {
-                allInfoAboutMatch.getBannedChampions().add(new BannedChampion(champ.get("championId").asText()));
-            }
-            allInfoAboutMatch.setUserTeam(userTeam);
-            allInfoAboutMatch.setGameMode(matchInfo.get("gameMode").asText());
+            setInfoAboutSummoners(matchInfo, allInfoAboutMatch, summonerInfo);
         }
         return matchMapper.mapToMatchInfoDtoFromMatchInfo(allInfoAboutMatch);
+    }
+
+    private void setInfoAboutSummoners(JsonNode matchInfo, MatchInfo allInfoAboutMatch, SummonerInfo summonerInfo) {
+        for (JsonNode s : matchInfo.get("participants")) {
+            MatchSummoner matchSummoner = setMatchSummoner(s);
+            matchSummoner.setSpellName1(getSpellNameBySpellId(s.get("spell1Id").asText()));
+            matchSummoner.setSpellName2(getSpellNameBySpellId(s.get("spell2Id").asText()));
+
+            allInfoAboutMatch.getSummoners().add(matchSummoner);
+
+            if (s.get("summonerId").asText().equals(summonerInfo.getId()))
+                allInfoAboutMatch.setUserTeam(s.get("teamId").asText());
+        }
+
+        for (JsonNode champ : matchInfo.get("bannedChampions")) {
+            allInfoAboutMatch.getBannedChampions().add(new BannedChampion(champ.get("championId").asText()));
+        }
+        allInfoAboutMatch.setGameMode(matchInfo.get("gameMode").asText());
     }
 
     private String checkIfNameIsNotEmpty(final String name, final String puuId) {
@@ -325,11 +312,7 @@ public class RiotFacade {
         champMatch.setLane(m.get("teamPosition").asText());
         champMatch.setDealtDamage(m.get("totalDamageDealtToChampions").asInt());
         champMatch.setTeamId(m.get("teamId").asInt());
-        if (m.get("win").asBoolean()) {
-            champMatch.setWin(true);
-        } else {
-            champMatch.setWin(false);
-        }
+        champMatch.setWin(m.get("win").asBoolean());
         return champMatch;
     }
 
@@ -349,7 +332,6 @@ public class RiotFacade {
                 .accountId(summonerInfo.getAccountId())
                 .puuid(summonerInfo.getPuuid())
                 .name(summonerInfo.getName())
-                .profileIconId(summonerInfo.getProfileIconId())
                 .summonerLevel(summonerInfo.getSummonerLevel())
                 .leagueInfo(leagueInfo)
                 .rank(match.getRank())
@@ -357,34 +339,76 @@ public class RiotFacade {
                 .matches(new ArrayList<>()).build();
     }
 
-    public PreviousMatchInfo getPreviousMatchByMatchId(String matchId) {
-        TeamObjective teamObjective = new TeamObjective();
+    public PreviousMatchInfo getPreviousMatchByMatchId(final String matchId) {
         List<ChampMatch> matchList = new ArrayList<>();
         PreviousMatchInfo previousMatchInfo = new PreviousMatchInfo();
-        JsonNode jsonNode = provider.getInfoAboutMatchById(matchId);
-        if (jsonNode == null) return null;
+        MatchInfo allInfoAboutMatch = MatchInfo.builder().summoners(new ArrayList<>()).bannedChampions(new ArrayList<>()).build();
 
-        JsonNode info = jsonNode.get("info");
+        JsonNode matchInfo = provider.getInfoAboutMatchById(matchId);
+        if (matchInfo == null) return null;
+
+        JsonNode info = matchInfo.get("info");
         if (info == null) return null;
 
         for (var summoner : info.get("participants")) {
             ChampMatch champMatch = new ChampMatch();
             matchList.add(setChampMatch(matchId, summoner, champMatch));
+            SummonerInfo summonerInfo = provider.getSummonerByPuuId(summoner.get("puuid").asText());
+            MatchSummoner matchSummoner = setMatchSummoner(summoner);
+            matchSummoner.setSpellName1(getSpellNameBySpellId(summoner.get("summoner1Id").asText()));
+            matchSummoner.setSpellName2(getSpellNameBySpellId(summoner.get("summoner2Id").asText()));
+            allInfoAboutMatch.getSummoners().add(matchSummoner);
+
+            if (summoner.get("summonerId").asText().equals(summonerInfo.getId()))
+                allInfoAboutMatch.setUserTeam(summoner.get("teamId").asText());
         }
 
         for (var objectives : info.get("teams")) {
             if (objectives.has("objectives")) {
+                TeamObjective teamObjective = new TeamObjective();
                 var objective = objectives.get("objectives");
-                if (objective.has("baron")) teamObjective.setBaronKills(objective.get("baron").get("kills").asText());
-                if (objective.has("champion")) teamObjective.setChampionKills(objective.get("champion").get("kills").asText());
-                if (objective.has("dragon")) teamObjective.setDragonKills(objective.get("dragon").get("kills").asText());
-                if (objectives.has("teamId")) teamObjective.setTeamId(objectives.get("teamId").asInt());
-            }
-            log.info(teamObjective.toString());
-        }
 
+                if (objective.has("baron"))
+                    teamObjective.setBaronKills(objective.get("baron").get("kills").asText());
+                if (objective.has("champion"))
+                    teamObjective.setChampionKills(objective.get("champion").get("kills").asText());
+                if (objective.has("dragon"))
+                    teamObjective.setDragonKills(objective.get("dragon").get("kills").asText());
+                if (objectives.has("teamId")) teamObjective.setTeamId(objectives.get("teamId").asInt());
+
+                previousMatchInfo.getTeamObjective().add(teamObjective);
+            }
+            if (objectives.has("bans")) {
+                var bans = objectives.get("bans");
+                for (var bannedChamp : bans) {
+                    allInfoAboutMatch.getBannedChampions()
+                            .add(new BannedChampion(getChampionById(bannedChamp.get("championId").asInt(), getLatestLoLVersion())));
+                }
+            }
+        }
+        allInfoAboutMatch.setGameMode(info.get("gameMode").asText());
+        previousMatchInfo.setMatchInfo(allInfoAboutMatch);
         previousMatchInfo.setMatchList(matchList);
-        previousMatchInfo.setTeamObjective(teamObjective);
         return previousMatchInfo;
+    }
+
+    private MatchSummoner setMatchSummoner(final JsonNode s) {
+        List<Rank> ranks = getSummonerRank(s.get("summonerId").asText());
+        MatchSummoner matchSummoner = new MatchSummoner();
+        Match match = setRankedSoloRank(ranks);
+
+        String puuId = s.get("puuid").asText();
+        String name = s.get("summonerName").asText();
+        name = checkIfNameIsNotEmpty(name, puuId);
+
+        matchSummoner.setPuuid(puuId);
+        matchSummoner.setTeamId(s.get("teamId").asInt());
+        matchSummoner.setChampionId(s.get("championId").asInt());
+        matchSummoner.setSummonerName(name);
+        matchSummoner.setSummonerId(s.get("summonerId").asText());
+        matchSummoner.setRank(match.getRank());
+        matchSummoner.setRankColor(match.getRankColor());
+        matchSummoner.setChampName(getChampionById(s.get("championId").asInt(), getLatestLoLVersion()));
+        return matchSummoner;
     }
 }

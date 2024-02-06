@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -13,5 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 public class PreviousMatchInfo {
     private List<ChampMatch> matchList;
-    private TeamObjective teamObjective;
+    private List<TeamObjective> teamObjective = new ArrayList<>();
+    private MatchInfo matchInfo;
 }

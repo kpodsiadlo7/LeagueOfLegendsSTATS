@@ -15,7 +15,6 @@ public class MatchDto {
     private String accountId;
     private String puuid;
     private String name;
-    private int profileIconId;
     private int summonerLevel;
     private LeagueInfoDto leagueInfo;
     private String rank;

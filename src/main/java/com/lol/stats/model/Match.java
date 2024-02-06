@@ -17,7 +17,6 @@ public class Match {
     private String accountId;
     private String puuid;
     private String name;
-    private int profileIconId;
     private int summonerLevel;
     private LeagueInfo leagueInfo;
     private String rank;

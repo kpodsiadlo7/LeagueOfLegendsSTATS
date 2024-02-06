@@ -13,7 +13,6 @@ public class MatchSummoner {
     private String puuid;
     private int teamId;
     private int championId;
-    private int profileIconId;
     private String summonerName;
     private String summonerId;
     private String rank;
