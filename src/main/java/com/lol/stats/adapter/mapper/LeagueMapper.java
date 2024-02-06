@@ -9,13 +9,13 @@ import java.util.stream.Collectors;
 
 @Service
 public class LeagueMapper {
-    public List<LeagueInfo> mapToLeagueInfoListFromLeagueInfoDtoList(final List<LeagueInfoDto> leagueInfoDtoList) {
+    public List<LeagueInfo> fromDtoList(final List<LeagueInfoDto> leagueInfoDtoList) {
         return leagueInfoDtoList.stream()
-                .map(this::mapToLeagueInfoFromLeagueInfoDto)
+                .map(this::fromDto)
                 .collect(Collectors.toList());
     }
 
-    LeagueInfo mapToLeagueInfoFromLeagueInfoDto(final LeagueInfoDto leagueInfoDto) {
+    LeagueInfo fromDto(final LeagueInfoDto leagueInfoDto) {
         return LeagueInfo.builder()
                 .leagueId(leagueInfoDto.getLeagueId())
                 .queueType(leagueInfoDto.getQueueType())
@@ -28,7 +28,7 @@ public class LeagueMapper {
                 .losses(leagueInfoDto.getLosses()).build();
     }
 
-    public LeagueInfoDto mapToLeagueInfoDtoFromLeagueInfo(final LeagueInfo leagueInfo) {
+    public LeagueInfoDto toDto(final LeagueInfo leagueInfo) {
         return new LeagueInfoDto(
                 leagueInfo.getLeagueId(),
                 leagueInfo.getQueueType(),

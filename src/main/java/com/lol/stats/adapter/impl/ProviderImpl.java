@@ -54,16 +54,16 @@ public class ProviderImpl implements Provider {
         String[] nameAndHash = summonerName.split("#");
         if(nameAndHash.length == 2){
             // nameAndHash[0] <- summonerName, nameAndHash[1] <- summonerHash
-            return summonerInfoMapper.fromSummonerInfoDto(
+            return summonerInfoMapper.fromDto(
                     europeRiotClient.getSummonerByNameAndHash(nameAndHash[0],nameAndHash[1],provideKey()));
         }
         // we are looking for by name without #hash
-        return summonerInfoMapper.fromSummonerInfoDto(eun1RiotClient.getSummonerByName(summonerName, provideKey()));
+        return summonerInfoMapper.fromDto(eun1RiotClient.getSummonerByName(summonerName, provideKey()));
     }
 
     @Override
     public SummonerInfo getSummonerByPuuId(final String puuId) {
-        return summonerInfoMapper.fromSummonerInfoDto(eun1RiotClient.getSummonerByPuuId(puuId,provideKey()));
+        return summonerInfoMapper.fromDto(eun1RiotClient.getSummonerByPuuId(puuId,provideKey()));
     }
 
     @Override
@@ -74,12 +74,12 @@ public class ProviderImpl implements Provider {
 
     @Override
     public List<Rank> getLeagueV4Info(final String summonerId) {
-        return rankMapper.mapToRankListFromRankDtoList(eun1RiotClient.getLeagueV4(summonerId, provideKey()));
+        return rankMapper.fromDtoList(eun1RiotClient.getLeagueV4(summonerId, provideKey()));
     }
 
     @Override
     public List<Champion> getChampionsByPuuId(final String puuId) {
-        return championMapper.mapToChampionListFromChampionDtoList(eun1RiotClient.getChampions(puuId, provideKey()));
+        return championMapper.fromDtoList(eun1RiotClient.getChampions(puuId, provideKey()));
     }
 
     @Override
@@ -89,7 +89,7 @@ public class ProviderImpl implements Provider {
 
     @Override
     public List<LeagueInfo> getLeagueInfoListBySummonerId(final String summonerId) {
-        return leagueMapper.mapToLeagueInfoListFromLeagueInfoDtoList(eun1RiotClient.getLeagueInfoBySummonerId(summonerId, provideKey()));
+        return leagueMapper.fromDtoList(eun1RiotClient.getLeagueInfoBySummonerId(summonerId, provideKey()));
     }
 
     @Override

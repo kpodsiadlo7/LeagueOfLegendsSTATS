@@ -2,9 +2,11 @@ package com.lol.stats.domain;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.lol.stats.adapter.mapper.MatchMapper;
+import com.lol.stats.adapter.mapper.PreviousMatchInfoMapper;
 import com.lol.stats.adapter.mapper.SummonerMapper;
 import com.lol.stats.dto.MatchDto;
 import com.lol.stats.dto.MatchInfoDto;
+import com.lol.stats.dto.PreviousMatchInfoDto;
 import com.lol.stats.dto.SummonerDto;
 import com.lol.stats.model.*;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import static java.lang.Thread.sleep;
 @RequiredArgsConstructor
 public class RiotFacade {
 
+    private final PreviousMatchInfoMapper previousMatchInfoMapper;
     private final SummonerMapper summonerMapper;
     private final MatchMapper matchMapper;
     private final Provider provider;
@@ -32,7 +35,7 @@ public class RiotFacade {
         Champion champion = getMainChampion(summonerInfo.getPuuid());
         String latestLoLVersion = getLatestLoLVersion();
 
-        return summonerMapper.mapToSummonerDtoFromSummoner(bakeSummoner(summonerInfo, ranks, champion, latestLoLVersion));
+        return summonerMapper.toDto(bakeSummoner(summonerInfo, ranks, champion, latestLoLVersion));
     }
 
     private SummonerInfo updateSummonerInfo(SummonerInfo summonerInfo) {
@@ -251,7 +254,7 @@ public class RiotFacade {
         List<String> matchesIdList = getSummonerMatchesByNameAndCount(puuId, matchesListCount);
         Match leagueInfo = getLeagueInfoFromMatchesList(puuId);
 
-        return matchMapper.mapToMatchDtoFromMatch(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, rankedCount));
+        return matchMapper.toDto(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, rankedCount));
     }
 
     private Match getLastRankedMatchesDependsOnCount(Match leagueInfo, List<String> matchesIdList, int count) throws InterruptedException {
@@ -339,7 +342,7 @@ public class RiotFacade {
                 .matches(new ArrayList<>()).build();
     }
 
-    public PreviousMatchInfo getPreviousMatchByMatchId(final String matchId) {
+    public PreviousMatchInfoDto getPreviousMatchByMatchId(final String matchId) {
         List<ChampMatch> matchList = new ArrayList<>();
         PreviousMatchInfo previousMatchInfo = new PreviousMatchInfo();
         MatchInfo allInfoAboutMatch = MatchInfo.builder().summoners(new ArrayList<>()).bannedChampions(new ArrayList<>()).build();
@@ -389,7 +392,7 @@ public class RiotFacade {
         allInfoAboutMatch.setGameMode(info.get("gameMode").asText());
         previousMatchInfo.setMatchInfo(allInfoAboutMatch);
         previousMatchInfo.setMatchList(matchList);
-        return previousMatchInfo;
+        return previousMatchInfoMapper.toDto(previousMatchInfo);
     }
 
     private MatchSummoner setMatchSummoner(final JsonNode s) {

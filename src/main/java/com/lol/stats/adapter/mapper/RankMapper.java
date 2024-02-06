@@ -9,13 +9,13 @@ import java.util.stream.Collectors;
 
 @Service
 public class RankMapper {
-    public List<Rank> mapToRankListFromRankDtoList(final List<RankDto> rankDto) {
+    public List<Rank> fromDtoList(final List<RankDto> rankDto) {
         return rankDto.stream()
-                .map(this::mapToRankFromRankDto)
+                .map(this::fromDto)
                 .collect(Collectors.toList());
     }
 
-    public Rank mapToRankFromRankDto(final RankDto rankDto) {
+    public Rank fromDto(final RankDto rankDto) {
         return Rank.builder()
                 .leagueId(rankDto.getLeagueId())
                 .queueType(rankDto.getQueueType())
@@ -26,13 +26,13 @@ public class RankMapper {
                 .losses(rankDto.getLosses()).build();
     }
 
-    public List<RankDto> mapToRankDtoListFromRankList(final List<Rank> ranks) {
+    public List<RankDto> toDtoList(final List<Rank> ranks) {
         return ranks.stream()
-                .map(this::mapToRankDtoFromRank)
+                .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
-    private RankDto mapToRankDtoFromRank(final Rank rank) {
+    private RankDto toDto(final Rank rank) {
         return new RankDto(
                 rank.getLeagueId(),
                 rank.getQueueType(),

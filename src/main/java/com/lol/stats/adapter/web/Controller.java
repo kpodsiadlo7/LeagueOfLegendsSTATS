@@ -3,6 +3,7 @@ package com.lol.stats.adapter.web;
 import com.lol.stats.domain.RiotFacade;
 import com.lol.stats.dto.MatchDto;
 import com.lol.stats.dto.MatchInfoDto;
+import com.lol.stats.dto.PreviousMatchInfoDto;
 import com.lol.stats.dto.SummonerDto;
 import com.lol.stats.model.ChampMatch;
 import com.lol.stats.model.PreviousMatchInfo;
@@ -14,8 +15,8 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-//@CrossOrigin(origins = "https://kpodsiadlo7.github.io")
-@CrossOrigin(origins = "http://127.0.0.1:3000/")
+@CrossOrigin(origins = "https://kpodsiadlo7.github.io")
+//@CrossOrigin(origins = "http://127.0.0.1:3000/")
 public class Controller {
 
     private final RiotFacade riotFacade;
@@ -53,7 +54,7 @@ public class Controller {
     }
 
     @GetMapping("/previous-match")
-    PreviousMatchInfo getPreviousMatchByMatchId(@RequestParam final String matchId){
+    PreviousMatchInfoDto getPreviousMatchByMatchId(@RequestParam final String matchId){
         return riotFacade.getPreviousMatchByMatchId(matchId);
     }
 }

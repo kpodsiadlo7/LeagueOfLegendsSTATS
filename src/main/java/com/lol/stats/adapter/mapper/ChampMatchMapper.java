@@ -9,13 +9,13 @@ import java.util.stream.Collectors;
 
 @Service
 public class ChampMatchMapper {
-    public List<ChampMatchDto> mapToChampMatchDtoListFromChampMatchList(final List<ChampMatch> matches) {
+    public List<ChampMatchDto> toDtoList(final List<ChampMatch> matches) {
         return matches.stream()
-                .map(this::mapToChampMatchDtoFromMatchChamp)
+                .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
 
-    private ChampMatchDto mapToChampMatchDtoFromMatchChamp(final ChampMatch champMatch) {
+    private ChampMatchDto mapToDto(final ChampMatch champMatch) {
         return new ChampMatchDto(
                 champMatch.getMatchId(),
                 champMatch.getMatchChampName(),

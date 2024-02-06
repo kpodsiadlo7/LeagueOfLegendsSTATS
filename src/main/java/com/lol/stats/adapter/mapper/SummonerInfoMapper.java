@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class SummonerInfoMapper {
-    public SummonerInfo fromSummonerInfoDto(final SummonerInfoDto summonerInfoDto) {
+    public SummonerInfo fromDto(final SummonerInfoDto summonerInfoDto) {
         return SummonerInfo.builder()
                 .id(summonerInfoDto.getId())
                 .accountId(summonerInfoDto.getAccountId())

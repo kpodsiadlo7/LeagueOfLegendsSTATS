@@ -10,13 +10,13 @@ import java.util.stream.Collectors;
 @Service
 public class ChampionMapper {
 
-    public List<Champion> mapToChampionListFromChampionDtoList(final List<ChampionDto> championDtoList) {
+    public List<Champion> fromDtoList(final List<ChampionDto> championDtoList) {
         return championDtoList.stream()
-                .map(this::mapToChampionFromChampionDto)
+                .map(this::fromDto)
                 .collect(Collectors.toList());
     }
 
-    public Champion mapToChampionFromChampionDto(final ChampionDto championDto) {
+    public Champion fromDto(final ChampionDto championDto) {
         return Champion.builder()
                 .championId(championDto.getChampionId())
                 .championLevel(championDto.getChampionLevel())
