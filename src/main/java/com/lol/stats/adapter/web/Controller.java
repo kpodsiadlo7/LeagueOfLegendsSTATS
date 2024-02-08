@@ -5,10 +5,11 @@ import com.lol.stats.dto.MatchDto;
 import com.lol.stats.dto.MatchInfoDto;
 import com.lol.stats.dto.PreviousMatchInfoDto;
 import com.lol.stats.dto.SummonerDto;
-import com.lol.stats.model.ChampMatch;
-import com.lol.stats.model.PreviousMatchInfo;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.List;
@@ -40,12 +41,12 @@ public class Controller {
 
     @GetMapping("/last3matches")
     MatchDto getLast3MatchesBySummonerName(@RequestParam final String puuId) throws InterruptedException {
-        return riotFacade.getLastMatchesByPuuIdAndCounts(puuId,20,3);
+        return riotFacade.getLastMatchesByPuuIdAndCounts(puuId, 20, 3);
     }
 
     @GetMapping("/last20matches")
     MatchDto getLast20MatchesBySummonerName(@RequestParam final String puuId) throws InterruptedException {
-        return riotFacade.getLastMatchesByPuuIdAndCounts(puuId,50,20);
+        return riotFacade.getLastMatchesByPuuIdAndCounts(puuId, 50, 20);
     }
 
     @GetMapping("/randomMatch")
@@ -54,7 +55,7 @@ public class Controller {
     }
 
     @GetMapping("/previous-match")
-    PreviousMatchInfoDto getPreviousMatchByMatchId(@RequestParam final String matchId){
+    PreviousMatchInfoDto getPreviousMatchByMatchId(@RequestParam final String matchId) {
         return riotFacade.getPreviousMatchByMatchId(matchId);
     }
 }

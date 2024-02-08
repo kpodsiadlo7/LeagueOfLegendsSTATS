@@ -307,6 +307,15 @@ public class RiotFacade {
     }
 
     private ChampMatch setChampMatch(String singleMatch, JsonNode m, ChampMatch champMatch) {
+        String lane = m.get("lane").asText();
+        String teamPosition = m.get("teamPosition").asText();
+        String individualPosition = m.get("individualPosition").asText();
+        String isLane =
+                !lane.equals("UTILITY") && !lane.equals("NONE") ? lane :
+                        (!teamPosition.equals("UTILITY") && !teamPosition.equals("NONE")) ? teamPosition :
+                                (!individualPosition.equals("UTILITY") && !individualPosition.equals("NONE")) ? individualPosition : "UNKNOWN";
+
+
         champMatch.setMatchId(singleMatch);
         champMatch.setMatchChampName(m.get("championName").asText());
         champMatch.setChampionId(m.get("championId").asInt());
@@ -314,7 +323,7 @@ public class RiotFacade {
         champMatch.setKda(m.get("challenges").get("kda").asInt());
         champMatch.setDeaths(m.get("deaths").asInt());
         champMatch.setKills(m.get("kills").asInt());
-        champMatch.setLane(m.get("teamPosition").asText());
+        champMatch.setLane(isLane);
         champMatch.setDealtDamage(m.get("totalDamageDealtToChampions").asInt());
         champMatch.setTeamId(m.get("teamId").asInt());
         champMatch.setWin(m.get("win").asBoolean());
