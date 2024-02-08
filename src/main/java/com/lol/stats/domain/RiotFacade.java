@@ -318,6 +318,8 @@ public class RiotFacade {
                         !individualPosition.equals("UTILITY") && !individualPosition.equals("NONE") ? individualPosition :
                                 !lane.equals("UTILITY") && !lane.equals("NONE") ? lane : "UNKNOWN";
 
+        isLane = m.get("role").asText().equals("SUPPORT") && isLane.equals("BOTTOM") ? "SUPPORT" : isLane;
+
         champMatch.setMatchId(singleMatch);
         champMatch.setMatchChampName(m.get("championName").asText());
         champMatch.setChampionId(m.get("championId").asInt());
@@ -374,6 +376,7 @@ public class RiotFacade {
             matchSummoner.setSpellName1(getSpellNameBySpellId(summoner.get("summoner1Id").asText()));
             matchSummoner.setSpellName2(getSpellNameBySpellId(summoner.get("summoner2Id").asText()));
             allInfoAboutMatch.getSummoners().add(matchSummoner);
+            allInfoAboutMatch.setTimeInSeconds(summoner.get("timePlayed").asInt());
 
             if (summoner.get("summonerId").asText().equals(summonerInfo.getId()))
                 allInfoAboutMatch.setUserTeam(summoner.get("teamId").asText());
