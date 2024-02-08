@@ -17,7 +17,8 @@ public class PreviousMatchInfoMapper {
         return new PreviousMatchInfoDto(
                 champMatchMapper.toDtoList(previousMatchInfo.getMatchList()),
                 teamObjectiveMapper.toDtoList(previousMatchInfo.getTeamObjective()),
-                matchInfoMapper.toDto(previousMatchInfo.getMatchInfo())
+                matchInfoMapper.toDto(previousMatchInfo.getMatchInfo()),
+                previousMatchInfo.getBannedChampions()
         );
     }
 }

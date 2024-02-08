@@ -382,6 +382,15 @@ public class RiotFacade {
                 allInfoAboutMatch.setUserTeam(summoner.get("teamId").asText());
         }
 
+        setObjectives(info, previousMatchInfo);
+
+        allInfoAboutMatch.setGameMode(info.get("gameMode").asText());
+        previousMatchInfo.setMatchInfo(allInfoAboutMatch);
+        previousMatchInfo.setMatchList(matchList);
+        return previousMatchInfoMapper.toDto(previousMatchInfo);
+    }
+
+    private void setObjectives(JsonNode info, PreviousMatchInfo previousMatchInfo) {
         for (var objectives : info.get("teams")) {
             if (objectives.has("objectives")) {
                 TeamObjective teamObjective = new TeamObjective();
@@ -397,18 +406,18 @@ public class RiotFacade {
 
                 previousMatchInfo.getTeamObjective().add(teamObjective);
             }
-            if (objectives.has("bans")) {
-                var bans = objectives.get("bans");
-                for (var bannedChamp : bans) {
-                    allInfoAboutMatch.getBannedChampions()
-                            .add(new BannedChampion(getChampionById(bannedChamp.get("championId").asInt(), getLatestLoLVersion())));
-                }
+            setBannedList(objectives, previousMatchInfo);
+        }
+    }
+
+    private void setBannedList(JsonNode objectives, PreviousMatchInfo previousMatchInfo) {
+        if (objectives.has("bans")) {
+            var bans = objectives.get("bans");
+            for (var bannedChamp : bans) {
+                previousMatchInfo.getBannedChampions()
+                        .add(new BannedChampion(getChampionById(bannedChamp.get("championId").asInt(), getLatestLoLVersion())));
             }
         }
-        allInfoAboutMatch.setGameMode(info.get("gameMode").asText());
-        previousMatchInfo.setMatchInfo(allInfoAboutMatch);
-        previousMatchInfo.setMatchList(matchList);
-        return previousMatchInfoMapper.toDto(previousMatchInfo);
     }
 
     private MatchSummoner setMatchSummoner(final JsonNode s) {
