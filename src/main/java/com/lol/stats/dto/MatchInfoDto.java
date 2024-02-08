@@ -14,7 +14,6 @@ import java.util.List;
 public class MatchInfoDto {
     private String userTeam;
     private String gameMode;
-    private int timeInSeconds;
     private List<BannedChampionDto> bannedChampions;
     private List<MatchSummonerDto> summoners;
 }
