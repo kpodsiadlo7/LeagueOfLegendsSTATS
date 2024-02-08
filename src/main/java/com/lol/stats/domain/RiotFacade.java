@@ -247,8 +247,8 @@ public class RiotFacade {
         if (exampleMatch != null && !exampleMatch.get("gameList").isEmpty()) {
             String name = exampleMatch.get("gameList").get(0).get("participants").get(0).get("summonerName").asText();
             String puuId = exampleMatch.get("gameList").get(0).get("participants").get(0).get("puuid").asText();
-            
-            String summonerNameFromExistingGame = checkIfNameIsNotEmpty(name,puuId);
+
+            String summonerNameFromExistingGame = checkIfNameIsNotEmpty(name, puuId);
             return summonerNameFromExistingGame != null ? summonerNameFromExistingGame : "Brak listy gier. Spróbuj ponownie za chwilę";
         }
         return "Brak listy gier. Spróbuj ponownie za chwilę";
@@ -314,9 +314,9 @@ public class RiotFacade {
         String teamPosition = m.get("teamPosition").asText();
         String individualPosition = m.get("individualPosition").asText();
         String isLane =
-                !lane.equals("UTILITY") && !lane.equals("NONE") ? lane :
-                        (!teamPosition.equals("UTILITY") && !teamPosition.equals("NONE")) ? teamPosition :
-                                (!individualPosition.equals("UTILITY") && !individualPosition.equals("NONE")) ? individualPosition : "UNKNOWN";
+                !teamPosition.equals("UTILITY") && !teamPosition.equals("NONE") ? teamPosition :
+                        !individualPosition.equals("UTILITY") && !individualPosition.equals("NONE") ? individualPosition :
+                                !lane.equals("UTILITY") && !lane.equals("NONE") ? lane : "UNKNOWN";
 
         champMatch.setMatchId(singleMatch);
         champMatch.setMatchChampName(m.get("championName").asText());
