@@ -13,10 +13,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PreviousMatchInfo {
-    private List<ChampMatch> matchList;
     private List<TeamObjective> teamObjective = new ArrayList<>();
-    private MatchInfo matchInfo;
-
-
+    private int timeInSeconds;
+    private String matchId;
     private List<BannedChampion> bannedChampions = new ArrayList<>();
+    private List<PreviousMatchSummoner> summoners = new ArrayList<>();
 }

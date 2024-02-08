@@ -16,7 +16,6 @@ public class MatchInfoMapper {
         return new MatchInfoDto(
                 matchInfo.getUserTeam(),
                 matchInfo.getGameMode(),
-                matchInfo.getTimeInSeconds(),
                 bannedChampionMapper.toDtoList(matchInfo.getBannedChampions()),
                 matchSummonerMapper.toDtoList(matchInfo.getSummoners())
         );

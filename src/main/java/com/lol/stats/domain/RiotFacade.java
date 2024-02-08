@@ -310,15 +310,7 @@ public class RiotFacade {
     }
 
     private ChampMatch setChampMatch(String singleMatch, JsonNode m, ChampMatch champMatch) {
-        String lane = m.get("lane").asText();
-        String teamPosition = m.get("teamPosition").asText();
-        String individualPosition = m.get("individualPosition").asText();
-        String isLane =
-                !teamPosition.equals("UTILITY") && !teamPosition.equals("NONE") ? teamPosition :
-                        !individualPosition.equals("UTILITY") && !individualPosition.equals("NONE") ? individualPosition :
-                                !lane.equals("UTILITY") && !lane.equals("NONE") ? lane : "UNKNOWN";
-
-        isLane = m.get("role").asText().equals("SUPPORT") && isLane.equals("BOTTOM") ? "SUPPORT" : isLane;
+        String isLane = getLane(m);
 
         champMatch.setMatchId(singleMatch);
         champMatch.setMatchChampName(m.get("championName").asText());
@@ -332,6 +324,19 @@ public class RiotFacade {
         champMatch.setTeamId(m.get("teamId").asInt());
         champMatch.setWin(m.get("win").asBoolean());
         return champMatch;
+    }
+
+    private static String getLane(JsonNode m) {
+        String lane = m.get("lane").asText();
+        String teamPosition = m.get("teamPosition").asText();
+        String individualPosition = m.get("individualPosition").asText();
+        String isLane =
+                !teamPosition.equals("UTILITY") && !teamPosition.equals("NONE") ? teamPosition :
+                        !individualPosition.equals("UTILITY") && !individualPosition.equals("NONE") ? individualPosition :
+                                !lane.equals("UTILITY") && !lane.equals("NONE") ? lane : "UNKNOWN";
+
+        isLane = m.get("role").asText().equals("SUPPORT") && isLane.equals("BOTTOM") ? "SUPPORT" : isLane;
+        return isLane;
     }
 
     private Match getLeagueInfoFromMatchesList(final String puuId) {
@@ -358,9 +363,8 @@ public class RiotFacade {
     }
 
     public PreviousMatchInfoDto getPreviousMatchByMatchId(final String matchId) {
-        List<ChampMatch> matchList = new ArrayList<>();
+        List<PreviousMatchSummoner> summoners = new ArrayList<>();
         PreviousMatchInfo previousMatchInfo = new PreviousMatchInfo();
-        MatchInfo allInfoAboutMatch = MatchInfo.builder().summoners(new ArrayList<>()).bannedChampions(new ArrayList<>()).build();
 
         JsonNode matchInfo = provider.getInfoAboutMatchById(matchId);
         if (matchInfo == null) return null;
@@ -369,25 +373,42 @@ public class RiotFacade {
         if (info == null) return null;
 
         for (var summoner : info.get("participants")) {
-            ChampMatch champMatch = new ChampMatch();
-            matchList.add(setChampMatch(matchId, summoner, champMatch));
-            SummonerInfo summonerInfo = provider.getSummonerByPuuId(summoner.get("puuid").asText());
-            MatchSummoner matchSummoner = setMatchSummoner(summoner);
-            matchSummoner.setSpellName1(getSpellNameBySpellId(summoner.get("summoner1Id").asText()));
-            matchSummoner.setSpellName2(getSpellNameBySpellId(summoner.get("summoner2Id").asText()));
-            allInfoAboutMatch.getSummoners().add(matchSummoner);
-            allInfoAboutMatch.setTimeInSeconds(summoner.get("timePlayed").asInt());
+            summoners.add(setPreviousMatchSummoner(summoner));
 
-            if (summoner.get("summonerId").asText().equals(summonerInfo.getId()))
-                allInfoAboutMatch.setUserTeam(summoner.get("teamId").asText());
+            if (previousMatchInfo.getTimeInSeconds() < 1) {
+                previousMatchInfo.setTimeInSeconds(summoner.get("timePlayed").asInt());
+            }
         }
 
+        // include banned champions list
         setObjectives(info, previousMatchInfo);
 
-        allInfoAboutMatch.setGameMode(info.get("gameMode").asText());
-        previousMatchInfo.setMatchInfo(allInfoAboutMatch);
-        previousMatchInfo.setMatchList(matchList);
+        previousMatchInfo.setSummoners(summoners);
+        previousMatchInfo.setMatchId(matchInfo.get("metadata").get("matchId").asText());
+
         return previousMatchInfoMapper.toDto(previousMatchInfo);
+    }
+
+    private PreviousMatchSummoner setPreviousMatchSummoner(JsonNode summoner) {
+        SummonerInfo summonerInfo = provider.getSummonerByPuuId(summoner.get("puuid").asText());
+        List<Rank> ranks = getSummonerRank(summoner.get("summonerId").asText());
+        Match match = setRankedSoloRank(ranks);
+        int champIconId = summoner.get("championId").asInt();
+        return PreviousMatchSummoner.builder()
+                .lane(getLane(summoner))
+                .puuId(summonerInfo.getPuuid())
+                .summonerName(checkIfNameIsNotEmpty(summonerInfo.getName(),summonerInfo.getPuuid()))
+                .rank(match.getRank())
+                .rankColor(match.getRankColor())
+                .matchChampName(getChampionById(champIconId, getLatestLoLVersion()))
+                .championId(champIconId)
+                .assists(summoner.get("assists").asInt())
+                .kda(summoner.get("challenges").get("kda").asInt())
+                .deaths(summoner.get("deaths").asInt())
+                .kills(summoner.get("kills").asInt())
+                .dealtDamage(summoner.get("totalDamageDealtToChampions").asInt())
+                .win(summoner.get("win").asBoolean())
+                .teamId(summoner.get("teamId").asInt()).build();
     }
 
     private void setObjectives(JsonNode info, PreviousMatchInfo previousMatchInfo) {
