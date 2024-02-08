@@ -17,7 +17,7 @@ public class BannedChampionMapper {
 
     BannedChampionDto toDto(final BannedChampion bannedChampion) {
         return new BannedChampionDto(
-                bannedChampion.getName()
+                bannedChampion.getChampionId()
         );
     }
 }

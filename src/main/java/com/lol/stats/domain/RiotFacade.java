@@ -436,7 +436,7 @@ public class RiotFacade {
             var bans = objectives.get("bans");
             for (var bannedChamp : bans) {
                 previousMatchInfo.getBannedChampions()
-                        .add(new BannedChampion(getChampionById(bannedChamp.get("championId").asInt(), getLatestLoLVersion())));
+                        .add(new BannedChampion(bannedChamp.get("championId").asText()));
             }
         }
     }
