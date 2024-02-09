@@ -6,14 +6,19 @@ import com.lol.stats.dto.MatchInfoDto;
 import com.lol.stats.dto.PreviousMatchInfoDto;
 import com.lol.stats.dto.SummonerDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin(origins = "https://kpodsiadlo7.github.io")
@@ -57,5 +62,11 @@ public class Controller {
     @GetMapping("/previous-match")
     PreviousMatchInfoDto getPreviousMatchByMatchId(@RequestParam final String matchId) {
         return riotFacade.getPreviousMatchByMatchId(matchId);
+    }
+
+    @GetMapping("/warmup")
+    ResponseEntity<?> warmup(){
+        log.info("Warmup at "+ LocalDateTime.now());
+        return ResponseEntity.ok().build();
     }
 }

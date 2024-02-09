@@ -333,7 +333,7 @@ public class RiotFacade {
         String isLane =
                 !teamPosition.equals("UTILITY") && !teamPosition.equals("NONE") ? teamPosition :
                         !individualPosition.equals("UTILITY") && !individualPosition.equals("NONE") ? individualPosition :
-                                !lane.equals("UTILITY") && !lane.equals("NONE") ? lane : "UNKNOWN";
+                                !lane.equals("UTILITY") && !lane.equals("NONE") ? lane : "UTILITY";
 
         isLane = m.get("role").asText().equals("SUPPORT") && isLane.equals("BOTTOM") ? "SUPPORT" : isLane;
         return isLane;
