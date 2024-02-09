@@ -390,20 +390,26 @@ public class RiotFacade {
     }
 
     private PreviousMatchSummoner setPreviousMatchSummoner(JsonNode summoner) {
-        SummonerInfo summonerInfo = provider.getSummonerByPuuId(summoner.get("puuid").asText());
-        List<Rank> ranks = getSummonerRank(summoner.get("summonerId").asText());
+        // case for bots included
+        SummonerInfo summonerInfo = !summoner.get("puuid").asText().equals("BOT") ?
+                provider.getSummonerByPuuId(summoner.get("puuid").asText()) :
+                SummonerInfo.builder().name("BOT").puuid("BOT").build();
+        List<Rank> ranks = new ArrayList<>();
+        int kda = summoner.get("challenges") != null ? summoner.get("challenges").get("kda").asInt() : 0;
+        if(!summonerInfo.getPuuid().equals("BOT")) ranks = getSummonerRank(summoner.get("summonerId").asText());
+
         Match match = setRankedSoloRank(ranks);
         int champIconId = summoner.get("championId").asInt();
         return PreviousMatchSummoner.builder()
                 .lane(getLane(summoner))
                 .puuId(summonerInfo.getPuuid())
-                .summonerName(checkIfNameIsNotEmpty(summonerInfo.getName(),summonerInfo.getPuuid()))
+                .summonerName(checkIfNameIsNotEmpty(summonerInfo.getName(), summonerInfo.getPuuid()))
                 .rank(match.getRank())
                 .rankColor(match.getRankColor())
                 .matchChampName(getChampionById(champIconId, getLatestLoLVersion()))
                 .championId(champIconId)
                 .assists(summoner.get("assists").asInt())
-                .kda(summoner.get("challenges").get("kda").asInt())
+                .kda(kda)
                 .deaths(summoner.get("deaths").asInt())
                 .kills(summoner.get("kills").asInt())
                 .dealtDamage(summoner.get("totalDamageDealtToChampions").asInt())
