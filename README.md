@@ -1,4 +1,4 @@
-# League of Legends Profile Search Application
+# League of Legends Profile Search Application - Backend
 
 Welcome to the League of Legends Profile Search Application! This application allows users to search for any League of
 Legends player's profile and retrieve information such as League Points, ranks in both Solo/Duo and Flex queues, and
