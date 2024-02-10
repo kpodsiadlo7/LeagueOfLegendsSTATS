@@ -56,7 +56,7 @@ revealing all participants of that particular match.
 - View Recent Match History:
 
     - Once the player's profile is loaded, you can view their recent match history.
-    - Each match card displays basic information about the match such as champion icons, K/D/A ratios, damage dealt,
+    - Match card displays basic information about the match such as champion icons, K/D/A ratios, damage dealt,
       lane
       played, and match outcome.
     - Click on any match card to view detailed information about the match.
