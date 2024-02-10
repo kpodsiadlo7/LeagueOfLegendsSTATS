@@ -43,8 +43,8 @@ revealing all participants of that particular match.
 
 - Search Player Profile:
     - Navigate to the website [LeagueProfileSearch](https://kpodsiadlo7.github.io).
-      Everything you need can be found on the 'Search Player' and 'Search Match'
-      subpages such as <b>example names</b> and <b>example match</b>.
+      <b>Everything you need can be found on the 'Search Player' and 'Search Match'
+      subpages such as example names and example match</b>.
     - Enter the summoner name of the player you want to search for in the designated search bar and hit enter or click
       the
       search button.
