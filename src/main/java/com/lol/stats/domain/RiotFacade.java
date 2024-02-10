@@ -390,7 +390,7 @@ public class RiotFacade {
     }
 
     private PreviousMatchSummoner setPreviousMatchSummoner(JsonNode summoner) {
-        // case for bots included
+        // case for playing with bots
         SummonerInfo summonerInfo = !summoner.get("puuid").asText().equals("BOT") ?
                 provider.getSummonerByPuuId(summoner.get("puuid").asText()) :
                 SummonerInfo.builder().name("BOT").puuid("BOT").build();

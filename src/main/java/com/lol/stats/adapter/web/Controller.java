@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 @Slf4j
@@ -65,8 +64,8 @@ public class Controller {
     }
 
     @GetMapping("/warmup")
-    ResponseEntity<?> warmup(){
-        log.info("Warmup at "+ LocalDateTime.now());
+    ResponseEntity<?> warmup() {
+        log.info("Warmup at " + LocalDateTime.now());
         return ResponseEntity.ok().build();
     }
 }

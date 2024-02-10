@@ -1,18 +1,77 @@
-# <a href="https://kpodsiadlo7.github.io">League of Legends STATS</a>
-To jest aplikacja, która umożliwia śledzenie graczy aktualnie uczestniczących w rozgrywce. Dzięki niej możemy szybko znaleźć swoich znajomych, zobaczyć z kim obecnie grają, sprawdzić ich poziom doświadczenia, oraz uzyskać ogólne statystyki dotyczące liczby zwycięstw i porażek, jeśli posiadają rangę. Ponadto, aplikacja umożliwia przeglądanie profili i statystyk dowolnego gracza w League of Legends.
-                        <p style="font-size: 17px; color: #ddd;">
-                            Na podstronie <a href="https://kpodsiadlo7.github.io/matchinfo.html" style="color: white"><b>"Wyszukaj mecz"</b></a>, po wprowadzeniu nazwy użytkownika obecnie uczestniczącego w rozgrywce, 
-                            otrzymamy statystyki dotyczące tego konkretnego meczu. Znajdziemy informacje dotyczące wybranych championów, używanych masterków oraz wszystkich zbanowanych 
-                            bohaterów(obecni w meczach rankingowych, a nie w trybie ARAM).
-                            <b style="color: white">W ramach testów Riot udostępnia informacje dotyczące losowego, aktualnie trwającego meczu, co pozwala sprawdzić dowolne przypadkowe starcie.</b>
-                            Ponadto, po <b>kliknięciu na nazwę gracza,</b> po prawej stronie panelu pojawią się informacje dotyczące jego ostatnich wyników w meczach rankingowych. 
-                            Z uwagi na ograniczenia API, udostępniane są dane z ostatnich trzech starć, obejmujące nazwę gracza, poziom, rangę oraz ogólne statystyki zwycięstw i porażek, 
-                            o ile profil League jest dostępny. <b>Dodatkowo, dla każdego z tych trzech ostatnich meczów widoczna będzie postać, którą dany gracz grał, jego KDA oraz wynik starcia.</b>
-                        </p>
-                        <p style="font-size: 17px; color: #ddd;">
-                            Na podstronie <a href="https://kpodsiadlo7.github.io/summoner.html" style="color: white"><b>"Szukaj gracza"</b></a>, po wprowadzeniu dowolnej nazwy gracza uzyskamy dostęp do jego profilu, 
-                            z <b style="color: white">informacjami o poziomie, rangach w grach rankingowych solo/duo oraz flex,</b> jeżeli są dostępne. Na ekranie pojawi się ikona profilu gracza wraz z 
-                            grafiką zależną od jego rangi (solo/duo). <b>Tło karty profilu zostanie ustawione zgodnie z głównym championem gracza.</b>
-                            Na panelu bocznym pojawią się informacje dotyczące <b style="color: white">ostatnich 20 gier rankingowych</b> gracza, w tym nazwa wybranego <b>championa, wynik starcia oraz wskaźnik KDA</b>.
-                        </p><br><br><br>
-<p style="font-size: 30px; color: #ddd"><a style="color: #ddd" href="https://github.com/kpodsiadlo7/kpodsiadlo7.github.io">Frontend</a> - JavaScript | HTML | CSS <br> <a href="https://kpodsiadlo7.github.io" style="color: #fff; text-decoration: none">www.kpodsiadlo7.github.io</a></p>
+# League of Legends Profile Search Application
+
+Welcome to the League of Legends Profile Search Application! This application allows users to search for any League of
+Legends player's profile and retrieve information such as League Points, ranks in both Solo/Duo and Flex queues, and
+dynamically updates the profile card background according to the player's main champion. Additionally, users can view
+the player's last 20 ranked games out of their last 50 games, including champion icons, K/D/A ratios, damage dealt, the
+lane they played on, and the match outcome. Detailed information about each match can be accessed by clicking on it,
+revealing all participants of that particular match.
+
+## Features
+
+- Profile Search: Search for any League of Legends player's profile and retrieve basic information such as League
+  Points,
+  Solo/Duo and Flex ranks, and dynamic background based on their main champion.
+- Recent Match History: View the player's last 20 ranked games out of their last 50 games, including champion icons,
+  K/D/A
+  ratios, damage dealt, lane played, and match outcome.
+- Detailed Match Information: Click on any match to get detailed information about the match, including all
+  participants.
+
+## Additional Features
+
+- Active Match Search: Find information about an ongoing match, including ranks of all players, banned champions,
+  selected
+  spells, and more.
+- Recent Games Lookup: For each player individually, view their last 3 ranked games out of their last 20 games, with the
+  same detailed information available for each match.
+
+## Technologies Used
+
+#### Frontend:
+
+- JavaScript
+- HTML
+- CSS
+
+#### Backend:
+
+- Java 17
+- Spring 3
+
+## How to Use
+
+- Search Player Profile:
+    - Navigate to the website [LeagueProfileSearch](https://kpodsiadlo7.github.io).
+      Everything you need can be found on the 'Search Player' and 'Search Match'
+      subpages such as <b>example names</b> and <b>example match</b>.
+    - Enter the summoner name of the player you want to search for in the designated search bar and hit enter or click
+      the
+      search button.
+    - View basic information about the player including League Points, ranks, and dynamically updated background based
+      on
+      their main champion.
+    - Click on the profile card to view the player's recent match history.
+  ####
+- View Recent Match History:
+
+    - Once the player's profile is loaded, you can view their recent match history.
+    - Each match card displays basic information about the match such as champion icons, K/D/A ratios, damage dealt,
+      lane
+      played, and match outcome.
+    - Click on any match card to view detailed information about the match.
+  ####
+- Active Match Search:
+    - Use the designated feature to search for information about an ongoing match, including ranks of all players,
+      banned
+      champions, selected spells, etc.
+  ####
+- Individual Recent Games Lookup:
+
+    - Click on any player's name within the application to view their recent 3 ranked games out of their last 20 games,
+      with
+      the same detailed information available for each match.
+
+Enjoy using the League of Legends Profile Search Application!
+
+### [LeagueProfileSearch Frontend](https://github.com/kpodsiadlo7/kpodsiadlo7.github.io)
