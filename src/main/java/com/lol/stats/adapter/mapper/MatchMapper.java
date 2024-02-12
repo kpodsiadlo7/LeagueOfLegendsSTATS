@@ -1,18 +1,9 @@
 package com.lol.stats.adapter.mapper;
 
-import com.lol.stats.dto.BannedChampionDto;
 import com.lol.stats.dto.MatchDto;
-import com.lol.stats.dto.MatchInfoDto;
-import com.lol.stats.dto.MatchSummonerDto;
-import com.lol.stats.model.BannedChampion;
 import com.lol.stats.model.Match;
-import com.lol.stats.model.MatchInfo;
-import com.lol.stats.model.MatchSummoner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
