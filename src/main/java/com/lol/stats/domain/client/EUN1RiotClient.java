@@ -1,7 +1,7 @@
 package com.lol.stats.domain.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lol.stats.dto.ChampionDto;
+import com.lol.stats.dto.RecordChampion;
 import com.lol.stats.dto.LeagueInfoDto;
 import com.lol.stats.dto.RankDto;
 import com.lol.stats.dto.SummonerInfoDto;
@@ -27,7 +27,7 @@ public interface EUN1RiotClient {
     List<RankDto> getLeagueV4(@PathVariable String summonerId, @PathVariable final String apiKey);
 
     @GetMapping("/champion-mastery/v4/champion-masteries/by-puuid/{puuId}/top?count=1&api_key={apiKey}")
-    List<ChampionDto> getChampions(@PathVariable String puuId, @PathVariable final String apiKey);
+    List<RecordChampion> getChampions(@PathVariable String puuId, @PathVariable final String apiKey);
 
     @GetMapping("/spectator/v4/active-games/by-summoner/{summonerId}?api_key={apiKey}")
     JsonNode getMatchInfoBySummonerId(@PathVariable String summonerId, @PathVariable final String apiKey);

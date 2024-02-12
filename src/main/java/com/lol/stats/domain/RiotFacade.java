@@ -5,10 +5,7 @@ import com.lol.stats.adapter.mapper.MatchInfoMapper;
 import com.lol.stats.adapter.mapper.MatchMapper;
 import com.lol.stats.adapter.mapper.PreviousMatchInfoMapper;
 import com.lol.stats.adapter.mapper.SummonerMapper;
-import com.lol.stats.dto.MatchDto;
-import com.lol.stats.dto.MatchInfoDto;
-import com.lol.stats.dto.PreviousMatchInfoDto;
-import com.lol.stats.dto.SummonerDto;
+import com.lol.stats.dto.*;
 import com.lol.stats.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +32,7 @@ public class RiotFacade {
         SummonerInfo summonerInfo = getSummonerInfo(summonerName);
 
         List<Rank> ranks = getSummonerRank(summonerInfo.getId());
-        Champion champion = getMainChampion(summonerInfo.getPuuid());
+        RecordChampion champion = getMainChampion(summonerInfo.getPuuid());
         String latestLoLVersion = getLatestLoLVersion();
 
         return summonerMapper.toDto(bakeSummoner(summonerInfo, ranks, champion, latestLoLVersion));
@@ -54,9 +51,8 @@ public class RiotFacade {
                 .summonerLevel(summonerData.getSummonerLevel()).build();
     }
 
-    private Summoner bakeSummoner(final SummonerInfo summonerInfo, final List<Rank> ranks, final Champion champion, final String latestLoLVersion) {
+    private Summoner bakeSummoner(final SummonerInfo summonerInfo, final List<Rank> ranks, final RecordChampion champion, final String latestLoLVersion) {
         Summoner summoner = setRanksForSoloAndFlex(ranks);
-        String mainChampName = getChampionById(champion.getChampionId(), latestLoLVersion);
 
         return Summoner.builder()
                 .id(summonerInfo.getId())
@@ -68,17 +64,17 @@ public class RiotFacade {
                 .ranks(ranks)
                 .rankFlexColor(summoner.getRankFlexColor())
                 .rankSoloColor(summoner.getRankSoloColor())
-                .mainChamp(mainChampName)
+                .mainChamp(champion != null ? getChampionById(champion.championId(), latestLoLVersion) : "Darius")
                 .versionLoL(latestLoLVersion)
                 .build();
     }
 
-    private Champion getMainChampion(final String puuid) {
-        List<Champion> champions = provider.getChampionsByPuuId(puuid);
+    private RecordChampion getMainChampion(final String puuid) {
+        List<RecordChampion> champions = provider.getChampionsByPuuId(puuid);
         if (champions != null && !champions.isEmpty()) {
             return champions.get(0);
         }
-        return new Champion();
+        return null;
     }
 
     private Summoner setRanksForSoloAndFlex(List<Rank> ranks) {
