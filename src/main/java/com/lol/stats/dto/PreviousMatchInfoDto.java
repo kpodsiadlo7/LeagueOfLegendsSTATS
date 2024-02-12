@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PreviousMatchInfoDto {
-    private List<TeamObjectiveDto> teamObjective = new ArrayList<>();
+    private List<RecordTeamObjective> teamObjective = new ArrayList<>();
     private int timeInSeconds;
     private String matchId;
     private List<BannedChampion> bannedChampions = new ArrayList<>();

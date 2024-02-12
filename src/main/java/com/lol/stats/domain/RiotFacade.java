@@ -410,18 +410,13 @@ public class RiotFacade {
     private void setObjectives(JsonNode info, PreviousMatchInfo previousMatchInfo) {
         for (var objectives : info.get("teams")) {
             if (objectives.has("objectives")) {
-                TeamObjective teamObjective = new TeamObjective();
                 var objective = objectives.get("objectives");
+                String baronKills = objective.get("baron").get("kills").asText();
+                String championKills = objective.get("champion").get("kills").asText();
+                String dragonKills = objective.get("dragon").get("kills").asText();
+                int teamId = objectives.get("teamId").asInt();
 
-                if (objective.has("baron"))
-                    teamObjective.setBaronKills(objective.get("baron").get("kills").asText());
-                if (objective.has("champion"))
-                    teamObjective.setChampionKills(objective.get("champion").get("kills").asText());
-                if (objective.has("dragon"))
-                    teamObjective.setDragonKills(objective.get("dragon").get("kills").asText());
-                if (objectives.has("teamId")) teamObjective.setTeamId(objectives.get("teamId").asInt());
-
-                previousMatchInfo.getTeamObjective().add(teamObjective);
+                previousMatchInfo.getTeamObjective().add(new RecordTeamObjective(championKills,baronKills,dragonKills,teamId));
             }
             setBannedList(objectives, previousMatchInfo);
         }

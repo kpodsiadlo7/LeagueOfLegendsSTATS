@@ -9,11 +9,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PreviousMatchInfoMapper {
 
-    private final TeamObjectiveMapper teamObjectiveMapper;
-
     public PreviousMatchInfoDto toDto(final PreviousMatchInfo previousMatchInfo) {
         return new PreviousMatchInfoDto(
-                teamObjectiveMapper.toDtoList(previousMatchInfo.getTeamObjective()),
+                previousMatchInfo.getTeamObjective(),
                 previousMatchInfo.getTimeInSeconds(),
                 previousMatchInfo.getMatchId(),
                 previousMatchInfo.getBannedChampions(),
