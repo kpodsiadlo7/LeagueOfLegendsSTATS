@@ -1,11 +1,14 @@
 package com.lol.stats.adapter.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lol.stats.adapter.mapper.*;
-import com.lol.stats.domain.*;
+import com.lol.stats.adapter.mapper.ChampionMapper;
+import com.lol.stats.adapter.mapper.LeagueMapper;
+import com.lol.stats.adapter.mapper.RankMapper;
+import com.lol.stats.adapter.mapper.SummonerInfoMapper;
+import com.lol.stats.domain.Provider;
 import com.lol.stats.domain.client.DDragonClient;
-import com.lol.stats.domain.client.EuropeRiotClient;
 import com.lol.stats.domain.client.EUN1RiotClient;
+import com.lol.stats.domain.client.EuropeRiotClient;
 import com.lol.stats.model.Champion;
 import com.lol.stats.model.LeagueInfo;
 import com.lol.stats.model.Rank;
@@ -48,14 +51,14 @@ public class ProviderImpl implements Provider {
 
     @Override
     public SummonerInfo getSummonerInfo(final String summonerName) {
-        if(summonerName == null || summonerName.isEmpty()) return new SummonerInfo();
+        if (summonerName == null || summonerName.isEmpty()) return new SummonerInfo();
 
         // if we are looking for by name with #hash, we need to use europeRiotClient
         String[] nameAndHash = summonerName.split("#");
-        if(nameAndHash.length == 2){
+        if (nameAndHash.length == 2) {
             // nameAndHash[0] <- summonerName, nameAndHash[1] <- summonerHash
             return summonerInfoMapper.fromDto(
-                    europeRiotClient.getSummonerByNameAndHash(nameAndHash[0],nameAndHash[1],provideKey()));
+                    europeRiotClient.getSummonerByNameAndHash(nameAndHash[0], nameAndHash[1], provideKey()));
         }
         // we are looking for by name without #hash
         return summonerInfoMapper.fromDto(eun1RiotClient.getSummonerByName(summonerName, provideKey()));
@@ -63,7 +66,7 @@ public class ProviderImpl implements Provider {
 
     @Override
     public SummonerInfo getSummonerByPuuId(final String puuId) {
-        return summonerInfoMapper.fromDto(eun1RiotClient.getSummonerByPuuId(puuId,provideKey()));
+        return summonerInfoMapper.fromDto(eun1RiotClient.getSummonerByPuuId(puuId, provideKey()));
     }
 
     @Override
@@ -119,6 +122,6 @@ public class ProviderImpl implements Provider {
 
     @Override
     public SummonerInfo getSummonerFromAccountData(final String puuId) {
-        return europeRiotClient.getSummonerByPuuIdFromAccountData(puuId,provideKey());
+        return europeRiotClient.getSummonerByPuuIdFromAccountData(puuId, provideKey());
     }
 }

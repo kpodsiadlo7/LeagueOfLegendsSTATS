@@ -87,12 +87,12 @@ public class RiotFacade {
 
         if (ranks != null && !ranks.isEmpty()) {
             ranks.forEach(rank -> {
-                        if ("RANKED_FLEX_SR".equals(rank.getQueueType())) {
-                            flexRankColor.set(setRankColorDependsOnTier(rank.getTier()));
-                        } else if ("RANKED_SOLO_5x5".equals(rank.getQueueType())) {
-                            soloRankColor.set(setRankColorDependsOnTier(rank.getTier()));
-                        }
-                    });
+                if ("RANKED_FLEX_SR".equals(rank.getQueueType())) {
+                    flexRankColor.set(setRankColorDependsOnTier(rank.getTier()));
+                } else if ("RANKED_SOLO_5x5".equals(rank.getQueueType())) {
+                    soloRankColor.set(setRankColorDependsOnTier(rank.getTier()));
+                }
+            });
         }
         return Summoner.builder().rankSoloColor(String.valueOf(soloRankColor)).rankFlexColor(String.valueOf(flexRankColor)).build();
     }
@@ -208,7 +208,7 @@ public class RiotFacade {
         AtomicReference<String> rankColor = new AtomicReference<>("#363949");
         if (ranks != null && !ranks.isEmpty()) {
             ranks.forEach(r -> {
-                if (r.getQueueType().equals("RANKED_SOLO_5x5")){
+                if (r.getQueueType().equals("RANKED_SOLO_5x5")) {
                     rank.set(r.getTier());
                     rankColor.set(setRankColorDependsOnTier(rank.get()));
                 }
@@ -270,7 +270,7 @@ public class RiotFacade {
                 for (JsonNode m : matchJN.get("info").get("participants")) {
                     ChampMatch champMatch = new ChampMatch();
                     if (m.get("puuid").asText().equals(leagueInfo.getPuuid())) {
-                        champMatch = setChampMatch(singleMatch, m, champMatch);
+                        setChampMatch(singleMatch, m, champMatch);
                         switch (m.get("win").asText()) {
                             case "true" -> {
                                 champMatch.setWin(true);
@@ -306,9 +306,7 @@ public class RiotFacade {
         return leagueInfo;
     }
 
-    private ChampMatch setChampMatch(String singleMatch, JsonNode m, ChampMatch champMatch) {
-        String isLane = getLane(m);
-
+    private void setChampMatch(String singleMatch, JsonNode m, ChampMatch champMatch) {
         champMatch.setMatchId(singleMatch);
         champMatch.setMatchChampName(m.get("championName").asText());
         champMatch.setChampionId(m.get("championId").asInt());
@@ -316,11 +314,10 @@ public class RiotFacade {
         champMatch.setKda(m.get("challenges").get("kda").asInt());
         champMatch.setDeaths(m.get("deaths").asInt());
         champMatch.setKills(m.get("kills").asInt());
-        champMatch.setLane(isLane);
+        champMatch.setLane(getLane(m));
         champMatch.setDealtDamage(m.get("totalDamageDealtToChampions").asInt());
         champMatch.setTeamId(m.get("teamId").asInt());
         champMatch.setWin(m.get("win").asBoolean());
-        return champMatch;
     }
 
     private static String getLane(JsonNode m) {
