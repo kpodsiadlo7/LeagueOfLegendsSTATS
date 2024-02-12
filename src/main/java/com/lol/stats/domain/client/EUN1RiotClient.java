@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.lol.stats.dto.RecordChampion;
 import com.lol.stats.dto.LeagueInfoDto;
 import com.lol.stats.dto.RankDto;
-import com.lol.stats.dto.SummonerInfoDto;
+import com.lol.stats.dto.RecordSummonerInfo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,10 +15,10 @@ import java.util.List;
 public interface EUN1RiotClient {
 
     @GetMapping("/summoner/v4/summoners/by-name/{summonerName}?api_key={apiKey}")
-    SummonerInfoDto getSummonerByName(@PathVariable String summonerName, @PathVariable final String apiKey);
+    RecordSummonerInfo getSummonerByName(@PathVariable String summonerName, @PathVariable final String apiKey);
 
     @GetMapping("/summoner/v4/summoners/by-puuid/{puuId}?api_key={apiKey}")
-    SummonerInfoDto getSummonerByPuuId(@PathVariable String puuId, @PathVariable final String apiKey);
+    RecordSummonerInfo getSummonerByPuuId(@PathVariable String puuId, @PathVariable final String apiKey);
 
     @GetMapping("/spectator/v4/active-games/by-summoner/{summonerId}?api_key={apiKey}")
     JsonNode getActiveGameInfo(@PathVariable String summonerId, @PathVariable final String apiKey);
