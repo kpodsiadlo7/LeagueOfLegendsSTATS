@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static java.lang.Thread.sleep;
 
@@ -81,19 +82,19 @@ public class RiotFacade {
     }
 
     private Summoner setRanksForSoloAndFlex(List<Rank> ranks) {
-        String flexRankColor = "";
-        String soloRankColor = "";
-        if (ranks != null && !ranks.isEmpty()) {
-            for (var rank : ranks) {
-                if (rank.getQueueType().equals("RANKED_FLEX_SR")) {
-                    flexRankColor = setRankColorDependsOnTier(rank.getTier());
+        AtomicReference<String> flexRankColor = new AtomicReference<>("");
+        AtomicReference<String> soloRankColor = new AtomicReference<>("");
 
-                } else if (rank.getQueueType().equals("RANKED_SOLO_5x5")) {
-                    soloRankColor = setRankColorDependsOnTier(rank.getTier());
-                }
-            }
+        if (ranks != null && !ranks.isEmpty()) {
+            ranks.forEach(rank -> {
+                        if ("RANKED_FLEX_SR".equals(rank.getQueueType())) {
+                            flexRankColor.set(setRankColorDependsOnTier(rank.getTier()));
+                        } else if ("RANKED_SOLO_5x5".equals(rank.getQueueType())) {
+                            soloRankColor.set(setRankColorDependsOnTier(rank.getTier()));
+                        }
+                    });
         }
-        return Summoner.builder().rankSoloColor(soloRankColor).rankFlexColor(flexRankColor).build();
+        return Summoner.builder().rankSoloColor(String.valueOf(soloRankColor)).rankFlexColor(String.valueOf(flexRankColor)).build();
     }
 
 
@@ -143,8 +144,7 @@ public class RiotFacade {
     }
 
     private String setRankColorDependsOnTier(final String rank) {
-        String lowerCaseRank = rank.toLowerCase();
-        return switch (lowerCaseRank) {
+        return switch (rank.toLowerCase()) {
             case "gold" -> "#FFD700";
             case "silver" -> "#C0C0C0";
             case "platinum" -> "#A9A9A9";
@@ -204,18 +204,17 @@ public class RiotFacade {
 
 
     private Match setRankedSoloRank(List<Rank> ranks) {
-        String rank = "BRAK RANGI";
-        String rankColor = "#363949";
+        AtomicReference<String> rank = new AtomicReference<>("BRAK RANGI");
+        AtomicReference<String> rankColor = new AtomicReference<>("#363949");
         if (ranks != null && !ranks.isEmpty()) {
-            for (Rank r : ranks) {
-                if (r.getQueueType().equals("RANKED_SOLO_5x5")) {
-                    rank = r.getTier();
-                    rankColor = setRankColorDependsOnTier(rank);
-                    return Match.builder().rank(rank).rankColor(rankColor).build();
+            ranks.forEach(r -> {
+                if (r.getQueueType().equals("RANKED_SOLO_5x5")){
+                    rank.set(r.getTier());
+                    rankColor.set(setRankColorDependsOnTier(rank.get()));
                 }
-            }
+            });
         }
-        return Match.builder().rank(rank).rankColor(rankColor).build();
+        return Match.builder().rank(String.valueOf(rank)).rankColor(String.valueOf(rankColor)).build();
     }
 
     private String getSpellNameBySpellId(String spellId) {
@@ -231,13 +230,11 @@ public class RiotFacade {
 
     private LeagueInfo getLeagueInfo(String summonerId) {
         List<LeagueInfo> leagueInfoList = provider.getLeagueInfoListBySummonerId(summonerId);
-
         if (leagueInfoList != null && !leagueInfoList.isEmpty()) {
-            for (LeagueInfo league : leagueInfoList) {
-                if (league.getQueueType().equals("RANKED_SOLO_5x5")) {
-                    return league;
-                }
-            }
+            return leagueInfoList.stream()
+                    .filter(league -> league.getQueueType().equals("RANKED_SOLO_5x5"))
+                    .findFirst()
+                    .orElseGet(LeagueInfo::new);
         }
         return new LeagueInfo();
     }
@@ -396,7 +393,7 @@ public class RiotFacade {
                 SummonerInfo.builder().name("BOT").puuid("BOT").build();
         List<Rank> ranks = new ArrayList<>();
         int kda = summoner.get("challenges") != null ? summoner.get("challenges").get("kda").asInt() : 0;
-        if(!summonerInfo.getPuuid().equals("BOT")) ranks = getSummonerRank(summoner.get("summonerId").asText());
+        if (!summonerInfo.getPuuid().equals("BOT")) ranks = getSummonerRank(summoner.get("summonerId").asText());
 
         Match match = setRankedSoloRank(ranks);
         int champIconId = summoner.get("championId").asInt();
