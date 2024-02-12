@@ -1,10 +1,10 @@
 package com.lol.stats.adapter.web;
 
 import com.lol.stats.domain.RiotFacade;
-import com.lol.stats.dto.MatchDto;
-import com.lol.stats.dto.MatchInfoDto;
-import com.lol.stats.dto.PreviousMatchInfoDto;
-import com.lol.stats.dto.SummonerDto;
+import com.lol.stats.dto.RecordMatch;
+import com.lol.stats.dto.RecordMatchInfo;
+import com.lol.stats.dto.RecordPreviousMatchInfo;
+import com.lol.stats.dto.RecordSummoner;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +27,7 @@ public class Controller {
     private final RiotFacade riotFacade;
 
     @GetMapping
-    SummonerDto getSummonerByName(@RequestParam final String summonerName) {
+    RecordSummoner getSummonerByName(@RequestParam final String summonerName) {
         return riotFacade.getSummonerInfoByName(summonerName);
     }
 
@@ -39,17 +39,17 @@ public class Controller {
     }
 
     @GetMapping("/matchInfo")
-    MatchInfoDto getMatchInfoBySummonerName(@RequestParam final String summonerName) {
+    RecordMatchInfo getMatchInfoBySummonerName(@RequestParam final String summonerName) {
         return riotFacade.getInfoAboutAllSummonerInActiveGame(summonerName);
     }
 
     @GetMapping("/last3matches")
-    MatchDto getLast3MatchesBySummonerName(@RequestParam final String puuId) throws InterruptedException {
+    RecordMatch getLast3MatchesBySummonerName(@RequestParam final String puuId) throws InterruptedException {
         return riotFacade.getLastMatchesByPuuIdAndCounts(puuId, 20, 3);
     }
 
     @GetMapping("/last20matches")
-    MatchDto getLast20MatchesBySummonerName(@RequestParam final String puuId) throws InterruptedException {
+    RecordMatch getLast20MatchesBySummonerName(@RequestParam final String puuId) throws InterruptedException {
         return riotFacade.getLastMatchesByPuuIdAndCounts(puuId, 50, 20);
     }
 
@@ -59,7 +59,7 @@ public class Controller {
     }
 
     @GetMapping("/previous-match")
-    PreviousMatchInfoDto getPreviousMatchByMatchId(@RequestParam final String matchId) {
+    RecordPreviousMatchInfo getPreviousMatchByMatchId(@RequestParam final String matchId) {
         return riotFacade.getPreviousMatchByMatchId(matchId);
     }
 

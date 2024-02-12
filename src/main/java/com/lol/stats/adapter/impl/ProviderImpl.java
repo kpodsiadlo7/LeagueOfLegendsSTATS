@@ -1,7 +1,6 @@
 package com.lol.stats.adapter.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lol.stats.adapter.mapper.LeagueMapper;
 import com.lol.stats.adapter.mapper.RankMapper;
 import com.lol.stats.adapter.mapper.SummonerInfoMapper;
 import com.lol.stats.domain.Provider;
@@ -9,7 +8,7 @@ import com.lol.stats.domain.client.DDragonClient;
 import com.lol.stats.domain.client.EUN1RiotClient;
 import com.lol.stats.domain.client.EuropeRiotClient;
 import com.lol.stats.dto.RecordChampion;
-import com.lol.stats.model.LeagueInfo;
+import com.lol.stats.dto.RecordLeagueInfo;
 import com.lol.stats.model.Rank;
 import com.lol.stats.model.SummonerInfo;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,6 @@ public class ProviderImpl implements Provider {
     private final EUN1RiotClient eun1RiotClient;
     private final SummonerInfoMapper summonerInfoMapper;
     private final RankMapper rankMapper;
-    private final LeagueMapper leagueMapper;
     private final EuropeRiotClient europeRiotClient;
     private final DDragonClient dDragonClient;
 
@@ -89,8 +87,8 @@ public class ProviderImpl implements Provider {
     }
 
     @Override
-    public List<LeagueInfo> getLeagueInfoListBySummonerId(final String summonerId) {
-        return leagueMapper.fromDtoList(eun1RiotClient.getLeagueInfoBySummonerId(summonerId, provideKey()));
+    public List<RecordLeagueInfo> getLeagueInfoListBySummonerId(final String summonerId) {
+        return eun1RiotClient.getLeagueInfoBySummonerId(summonerId, provideKey());
     }
 
     @Override

@@ -28,7 +28,7 @@ public class RiotFacade {
     private final MatchMapper matchMapper;
     private final Provider provider;
 
-    public SummonerDto getSummonerInfoByName(final String summonerName) {
+    public RecordSummoner getSummonerInfoByName(final String summonerName) {
         SummonerInfo summonerInfo = getSummonerInfo(summonerName);
 
         List<Rank> ranks = getSummonerRank(summonerInfo.getId());
@@ -161,7 +161,7 @@ public class RiotFacade {
         return provider.getInfoAboutMatchById(matchId);
     }
 
-    public MatchInfoDto getInfoAboutAllSummonerInActiveGame(String summonerName) {
+    public RecordMatchInfo getInfoAboutAllSummonerInActiveGame(String summonerName) {
         SummonerInfo summonerInfo = getSummonerInfo(summonerName);
         JsonNode matchInfo = provider.getMatchInfoBySummonerId(summonerInfo.getId());
 
@@ -224,15 +224,15 @@ public class RiotFacade {
         return "";
     }
 
-    private LeagueInfo getLeagueInfo(String summonerId) {
-        List<LeagueInfo> leagueInfoList = provider.getLeagueInfoListBySummonerId(summonerId);
+    private RecordLeagueInfo getLeagueInfo(String summonerId) {
+        List<RecordLeagueInfo> leagueInfoList = provider.getLeagueInfoListBySummonerId(summonerId);
         if (leagueInfoList != null && !leagueInfoList.isEmpty()) {
             return leagueInfoList.stream()
-                    .filter(league -> league.getQueueType().equals("RANKED_SOLO_5x5"))
+                    .filter(league -> league.queueType().equals("RANKED_SOLO_5x5"))
                     .findFirst()
-                    .orElseGet(LeagueInfo::new);
+                    .orElse(null);
         }
-        return new LeagueInfo();
+        return null;
     }
 
     public String getRandomSummonerNameFromExistingGame() {
@@ -248,11 +248,11 @@ public class RiotFacade {
     }
 
 
-    public MatchDto getLastMatchesByPuuIdAndCounts(final String puuId, final int matchesListCount, final int rankedCount) throws InterruptedException {
+    public RecordMatch getLastMatchesByPuuIdAndCounts(final String puuId, final int matchesListCount, final int rankedCount) throws InterruptedException {
         List<String> matchesIdList = getSummonerMatchesByNameAndCount(puuId, matchesListCount);
-        Match leagueInfo = getLeagueInfoFromMatchesList(puuId);
+        Match match = getLeagueInfoFromMatchesList(puuId);
 
-        return matchMapper.toDto(getLastRankedMatchesDependsOnCount(leagueInfo, matchesIdList, rankedCount));
+        return matchMapper.toDto(getLastRankedMatchesDependsOnCount(match, matchesIdList, rankedCount));
     }
 
     private Match getLastRankedMatchesDependsOnCount(Match leagueInfo, List<String> matchesIdList, int count) throws InterruptedException {
@@ -333,13 +333,13 @@ public class RiotFacade {
         SummonerInfo summonerInfo = provider.getSummonerByPuuId(puuId);
 
         String summonerId = summonerInfo.getId();
-        LeagueInfo leagueInfo = getLeagueInfo(summonerId);
+        RecordLeagueInfo leagueInfo = getLeagueInfo(summonerId);
         Match match = setRankedSoloRank(getSummonerRank(summonerId));
 
         return bakeMatch(summonerInfo, leagueInfo, match);
     }
 
-    private Match bakeMatch(final SummonerInfo summonerInfo, final LeagueInfo leagueInfo, final Match match) {
+    private Match bakeMatch(final SummonerInfo summonerInfo, final RecordLeagueInfo leagueInfo, final Match match) {
         return Match.builder()
                 .id(summonerInfo.getId())
                 .accountId(summonerInfo.getAccountId())
@@ -352,7 +352,7 @@ public class RiotFacade {
                 .matches(new ArrayList<>()).build();
     }
 
-    public PreviousMatchInfoDto getPreviousMatchByMatchId(final String matchId) {
+    public RecordPreviousMatchInfo getPreviousMatchByMatchId(final String matchId) {
         List<PreviousMatchSummoner> summoners = new ArrayList<>();
         PreviousMatchInfo previousMatchInfo = new PreviousMatchInfo();
 

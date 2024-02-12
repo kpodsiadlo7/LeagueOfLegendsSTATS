@@ -1,6 +1,6 @@
 package com.lol.stats.adapter.mapper;
 
-import com.lol.stats.dto.SummonerDto;
+import com.lol.stats.dto.RecordSummoner;
 import com.lol.stats.model.Summoner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,8 +11,8 @@ public class SummonerMapper {
 
     private final RankMapper rankMapper;
 
-    public SummonerDto toDto(final Summoner summoner) {
-        return new SummonerDto(
+    public RecordSummoner toDto(final Summoner summoner) {
+        return new RecordSummoner(
                 summoner.getId(),
                 summoner.getAccountId(),
                 summoner.getPuuid(),

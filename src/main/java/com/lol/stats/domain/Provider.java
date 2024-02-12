@@ -2,7 +2,7 @@ package com.lol.stats.domain;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.lol.stats.dto.RecordChampion;
-import com.lol.stats.model.LeagueInfo;
+import com.lol.stats.dto.RecordLeagueInfo;
 import com.lol.stats.model.Rank;
 import com.lol.stats.model.SummonerInfo;
 
@@ -22,7 +22,7 @@ public interface Provider {
 
     List<String> getMatchesByPuuIdAndCount(final String puuId, final int count);
 
-    List<LeagueInfo> getLeagueInfoListBySummonerId(final String summonerId);
+    List<RecordLeagueInfo> getLeagueInfoListBySummonerId(final String summonerId);
 
     JsonNode getExampleSummonerNameFromExistingGame();
 

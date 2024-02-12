@@ -1,6 +1,6 @@
 package com.lol.stats.adapter.mapper;
 
-import com.lol.stats.dto.ChampMatchDto;
+import com.lol.stats.dto.RecordChampMatch;
 import com.lol.stats.model.ChampMatch;
 import org.springframework.stereotype.Service;
 
@@ -9,14 +9,14 @@ import java.util.stream.Collectors;
 
 @Service
 public class ChampMatchMapper {
-    public List<ChampMatchDto> toDtoList(final List<ChampMatch> matches) {
+    public List<RecordChampMatch> toDtoList(final List<ChampMatch> matches) {
         return matches.stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
 
-    private ChampMatchDto mapToDto(final ChampMatch champMatch) {
-        return new ChampMatchDto(
+    private RecordChampMatch mapToDto(final ChampMatch champMatch) {
+        return new RecordChampMatch(
                 champMatch.getMatchId(),
                 champMatch.getMatchChampName(),
                 champMatch.getChampionId(),

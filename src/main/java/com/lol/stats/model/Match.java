@@ -1,5 +1,6 @@
 package com.lol.stats.model;
 
+import com.lol.stats.dto.RecordLeagueInfo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +19,7 @@ public class Match {
     private String puuid;
     private String name;
     private int summonerLevel;
-    private LeagueInfo leagueInfo;
+    private RecordLeagueInfo leagueInfo;
     private String rank;
     private String rankColor;
     private int wins;

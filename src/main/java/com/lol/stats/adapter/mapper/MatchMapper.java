@@ -1,6 +1,6 @@
 package com.lol.stats.adapter.mapper;
 
-import com.lol.stats.dto.MatchDto;
+import com.lol.stats.dto.RecordMatch;
 import com.lol.stats.model.Match;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -9,17 +9,16 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MatchMapper {
 
-    private final LeagueMapper leagueMapper;
     private final ChampMatchMapper champMatchMapper;
 
-    public MatchDto toDto(final Match match) {
-        return new MatchDto(
+    public RecordMatch toDto(final Match match) {
+        return new RecordMatch(
                 match.getId(),
                 match.getAccountId(),
                 match.getPuuid(),
                 match.getName(),
                 match.getSummonerLevel(),
-                leagueMapper.toDto(match.getLeagueInfo()),
+                match.getLeagueInfo() == null ? null : match.getLeagueInfo(),
                 match.getRank(),
                 match.getRankColor(),
                 match.getWins(),

@@ -2,8 +2,8 @@ package com.lol.stats.domain.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.lol.stats.dto.RecordChampion;
-import com.lol.stats.dto.LeagueInfoDto;
-import com.lol.stats.dto.RankDto;
+import com.lol.stats.dto.RecordLeagueInfo;
+import com.lol.stats.dto.RecordRank;
 import com.lol.stats.dto.RecordSummonerInfo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +24,7 @@ public interface EUN1RiotClient {
     JsonNode getActiveGameInfo(@PathVariable String summonerId, @PathVariable final String apiKey);
 
     @GetMapping("/league/v4/entries/by-summoner/{summonerId}?api_key={apiKey}")
-    List<RankDto> getLeagueV4(@PathVariable String summonerId, @PathVariable final String apiKey);
+    List<RecordRank> getLeagueV4(@PathVariable String summonerId, @PathVariable final String apiKey);
 
     @GetMapping("/champion-mastery/v4/champion-masteries/by-puuid/{puuId}/top?count=1&api_key={apiKey}")
     List<RecordChampion> getChampions(@PathVariable String puuId, @PathVariable final String apiKey);
@@ -33,7 +33,7 @@ public interface EUN1RiotClient {
     JsonNode getMatchInfoBySummonerId(@PathVariable String summonerId, @PathVariable final String apiKey);
 
     @GetMapping("/league/v4/entries/by-summoner/{summonerId}?api_key={apiKey}")
-    List<LeagueInfoDto> getLeagueInfoBySummonerId(@PathVariable String summonerId, @PathVariable final String apiKey);
+    List<RecordLeagueInfo> getLeagueInfoBySummonerId(@PathVariable String summonerId, @PathVariable final String apiKey);
 
     @GetMapping("/spectator/v4/featured-games?api_key={apiKey}")
     JsonNode getExampleSummonerNameFromRandomExistingGame(@PathVariable final String apiKey);
