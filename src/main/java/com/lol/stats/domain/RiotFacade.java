@@ -71,10 +71,7 @@ public class RiotFacade {
 
     private ChampionDto getMainChampion(final String puuid) {
         List<ChampionDto> champions = summonerProvider.getChampionsByPuuId(puuid);
-        if (champions != null && !champions.isEmpty()) {
-            return champions.get(0);
-        }
-        return null;
+        return champions == null ? null : champions.stream().findFirst().orElse(null);
     }
 
     private Summoner setRanksForSoloAndFlex(List<Rank> ranks) {
@@ -120,9 +117,8 @@ public class RiotFacade {
 
 
     String getChampionById(final int championId, final String latestLoLVersion) {
-        if (championId == -1) {
-            return "brak";
-        }
+        if (championId == -1) return "brak";
+
         String championName = getChampionByKey(championId, summonerProvider.getAllChampionsDependsOnLoLVersion(latestLoLVersion).get("data")).get("name").asText();
         return championName != null ? championName.replaceAll("[\\s'.]+", "") : "Brak takiego championka";
     }
