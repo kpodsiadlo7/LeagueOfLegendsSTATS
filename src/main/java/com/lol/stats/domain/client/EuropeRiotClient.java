@@ -1,7 +1,7 @@
 package com.lol.stats.domain.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lol.stats.dto.RecordSummonerInfo;
+import com.lol.stats.dto.SummonerInfoDto;
 import com.lol.stats.model.SummonerInfo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +18,7 @@ public interface EuropeRiotClient {
     JsonNode getInfoAboutMatchById(@PathVariable final String matchId, @PathVariable final String apiKey);
 
     @GetMapping("riot/account/v1/accounts/by-riot-id/{summonerName}/{summonerHash}?api_key={apiKey}")
-    RecordSummonerInfo getSummonerByNameAndHash(@PathVariable final String summonerName, @PathVariable final String summonerHash, @PathVariable  final String apiKey);
+    SummonerInfoDto getSummonerByNameAndHash(@PathVariable final String summonerName, @PathVariable final String summonerHash, @PathVariable  final String apiKey);
 
     @GetMapping("/riot/account/v1/accounts/by-puuid/{puuId}?api_key={apiKey}")
     SummonerInfo getSummonerByPuuIdFromAccountData(@PathVariable final String puuId, @PathVariable final String apiKey);

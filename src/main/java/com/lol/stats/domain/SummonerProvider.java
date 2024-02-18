@@ -1,14 +1,14 @@
 package com.lol.stats.domain;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.lol.stats.dto.RecordChampion;
-import com.lol.stats.dto.RecordLeagueInfo;
+import com.lol.stats.dto.ChampionDto;
+import com.lol.stats.dto.LeagueInfoDto;
 import com.lol.stats.model.Rank;
 import com.lol.stats.model.SummonerInfo;
 
 import java.util.List;
 
-public interface Provider {
+public interface SummonerProvider {
     String provideKey();
 
     SummonerInfo getSummonerInfo(final String summonerName);
@@ -18,11 +18,11 @@ public interface Provider {
 
     List<Rank> getLeagueV4Info(final String summonerId);
 
-    List<RecordChampion> getChampionsByPuuId(final String puuId);
+    List<ChampionDto> getChampionsByPuuId(final String puuId);
 
     List<String> getMatchesByPuuIdAndCount(final String puuId, final int count);
 
-    List<RecordLeagueInfo> getLeagueInfoListBySummonerId(final String summonerId);
+    List<LeagueInfoDto> getLeagueInfoListBySummonerId(final String summonerId);
 
     JsonNode getExampleSummonerNameFromExistingGame();
 

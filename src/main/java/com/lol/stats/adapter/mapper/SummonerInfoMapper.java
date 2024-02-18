@@ -1,20 +1,20 @@
 package com.lol.stats.adapter.mapper;
 
-import com.lol.stats.dto.RecordSummonerInfo;
+import com.lol.stats.dto.SummonerInfoDto;
 import com.lol.stats.model.SummonerInfo;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SummonerInfoMapper {
-    public SummonerInfo fromDto(final RecordSummonerInfo recordSummonerInfo) {
+    public SummonerInfo fromDto(final SummonerInfoDto summonerInfoDto) {
         return SummonerInfo.builder()
-                .id(recordSummonerInfo.id())
-                .accountId(recordSummonerInfo.accountId())
-                .puuid(recordSummonerInfo.puuid())
-                .tagLine(recordSummonerInfo.tagLine())
-                .name(recordSummonerInfo.name())
-                .gameName(recordSummonerInfo.gameName())
-                .profileIconId(recordSummonerInfo.profileIconId())
-                .summonerLevel(recordSummonerInfo.summonerLevel()).build();
+                .id(summonerInfoDto.id())
+                .accountId(summonerInfoDto.accountId())
+                .puuid(summonerInfoDto.puuid())
+                .tagLine(summonerInfoDto.tagLine())
+                .name(summonerInfoDto.name())
+                .gameName(summonerInfoDto.gameName())
+                .profileIconId(summonerInfoDto.profileIconId())
+                .summonerLevel(summonerInfoDto.summonerLevel()).build();
     }
 }

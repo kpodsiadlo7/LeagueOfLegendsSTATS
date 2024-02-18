@@ -1,6 +1,6 @@
 package com.lol.stats.model;
 
-import com.lol.stats.dto.RecordTeamObjective;
+import com.lol.stats.dto.TeamObjectiveDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PreviousMatchInfo {
-    private List<RecordTeamObjective> teamObjective = new ArrayList<>();
+    private List<TeamObjectiveDto> teamObjective = new ArrayList<>();
     private int timeInSeconds;
     private String matchId;
     private List<BannedChampion> bannedChampions = new ArrayList<>();

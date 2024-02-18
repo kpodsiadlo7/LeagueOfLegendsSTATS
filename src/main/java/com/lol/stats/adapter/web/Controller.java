@@ -1,17 +1,14 @@
 package com.lol.stats.adapter.web;
 
 import com.lol.stats.domain.RiotFacade;
-import com.lol.stats.dto.RecordMatch;
-import com.lol.stats.dto.RecordMatchInfo;
-import com.lol.stats.dto.RecordPreviousMatchInfo;
-import com.lol.stats.dto.RecordSummoner;
+import com.lol.stats.dto.MatchDto;
+import com.lol.stats.dto.MatchInfoDto;
+import com.lol.stats.dto.PreviousMatchInfoDto;
+import com.lol.stats.dto.SummonerDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -26,8 +23,8 @@ public class Controller {
 
     private final RiotFacade riotFacade;
 
-    @GetMapping
-    RecordSummoner getSummonerByName(@RequestParam final String summonerName) {
+    @GetMapping("/summoner/{summonerName}")
+    SummonerDto getSummonerByName(@PathVariable final String summonerName) {
         return riotFacade.getSummonerInfoByName(summonerName);
     }
 
@@ -39,18 +36,14 @@ public class Controller {
     }
 
     @GetMapping("/matchInfo")
-    RecordMatchInfo getMatchInfoBySummonerName(@RequestParam final String summonerName) {
+    MatchInfoDto getMatchInfoBySummonerName(@RequestParam final String summonerName) {
         return riotFacade.getInfoAboutAllSummonerInActiveGame(summonerName);
     }
-
-    @GetMapping("/last3matches")
-    RecordMatch getLast3MatchesBySummonerName(@RequestParam final String puuId) throws InterruptedException {
-        return riotFacade.getLastMatchesByPuuIdAndCounts(puuId, 20, 3);
-    }
-
-    @GetMapping("/last20matches")
-    RecordMatch getLast20MatchesBySummonerName(@RequestParam final String puuId) throws InterruptedException {
-        return riotFacade.getLastMatchesByPuuIdAndCounts(puuId, 50, 20);
+    @GetMapping("/lastMatches")
+    MatchDto getLastMatchesByPuuIdAndCount(@RequestParam final String puuId,
+                                           @RequestParam final int matchesListCount,
+                                           @RequestParam final int rankedCount) throws InterruptedException {
+        return riotFacade.getLastMatchesByPuuIdAndCounts(puuId, matchesListCount, rankedCount);
     }
 
     @GetMapping("/randomMatch")
@@ -59,7 +52,7 @@ public class Controller {
     }
 
     @GetMapping("/previous-match")
-    RecordPreviousMatchInfo getPreviousMatchByMatchId(@RequestParam final String matchId) {
+    PreviousMatchInfoDto getPreviousMatchByMatchId(@RequestParam final String matchId) {
         return riotFacade.getPreviousMatchByMatchId(matchId);
     }
 
