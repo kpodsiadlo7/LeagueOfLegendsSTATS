@@ -1,5 +1,6 @@
 package com.lol.stats.adapter.web;
 
+import com.lol.stats.adapter.mapper.SummonerMapper;
 import com.lol.stats.domain.RiotFacade;
 import com.lol.stats.dto.MatchDto;
 import com.lol.stats.dto.MatchInfoDto;
@@ -22,10 +23,11 @@ import java.util.List;
 public class Controller {
 
     private final RiotFacade riotFacade;
+    private final SummonerMapper summonerMapper;
 
     @GetMapping("/summoner/{summonerName}")
     SummonerDto getSummonerByName(@PathVariable final String summonerName) {
-        return riotFacade.getSummonerInfoByName(summonerName);
+        return summonerMapper.toDto(riotFacade.getSummonerInfoByName(summonerName));
     }
 
     @GetMapping("/matches")

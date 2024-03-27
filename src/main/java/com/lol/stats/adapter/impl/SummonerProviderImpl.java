@@ -26,11 +26,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SummonerProviderImpl implements SummonerProvider {
 
-    private final EUN1RiotClient eun1RiotClient;
     private final SummonerInfoMapper summonerInfoMapper;
-    private final RankMapper rankMapper;
     private final EuropeRiotClient europeRiotClient;
+    private final EUN1RiotClient eun1RiotClient;
     private final DDragonClient dDragonClient;
+    private final RankMapper rankMapper;
 
     @Override
     public String provideKey() {

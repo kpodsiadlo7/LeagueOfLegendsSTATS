@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.lol.stats.adapter.mapper.MatchInfoMapper;
 import com.lol.stats.adapter.mapper.MatchMapper;
 import com.lol.stats.adapter.mapper.PreviousMatchInfoMapper;
-import com.lol.stats.adapter.mapper.SummonerMapper;
 import com.lol.stats.dto.*;
 import com.lol.stats.model.*;
 import lombok.RequiredArgsConstructor;
@@ -23,19 +22,18 @@ import static java.lang.Thread.sleep;
 public class RiotFacade {
 
     private final PreviousMatchInfoMapper previousMatchInfoMapper;
-    private final MatchInfoMapper matchInfoMapper;
-    private final SummonerMapper summonerMapper;
-    private final MatchMapper matchMapper;
     private final SummonerProvider summonerProvider;
+    private final MatchInfoMapper matchInfoMapper;
+    private final MatchMapper matchMapper;
 
-    public SummonerDto getSummonerInfoByName(final String summonerName) {
+    public Summoner getSummonerInfoByName(final String summonerName) {
         SummonerInfo summonerInfo = getSummonerInfo(summonerName);
 
         List<Rank> ranks = getSummonerRank(summonerInfo.getId());
         ChampionDto champion = getMainChampion(summonerInfo.getPuuid());
         String latestLoLVersion = getLatestLoLVersion();
 
-        return summonerMapper.toDto(bakeSummoner(summonerInfo, ranks, champion, latestLoLVersion));
+        return bakeSummoner(summonerInfo, ranks, champion, latestLoLVersion);
     }
 
     private SummonerInfo updateSummonerInfo(SummonerInfo summonerInfo) {
