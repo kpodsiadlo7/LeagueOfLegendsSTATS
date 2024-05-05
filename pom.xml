@@ -43,7 +43,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.22</version>
+            <version>1.18.26</version>
             <scope>provided</scope>
         </dependency>
 
@@ -55,6 +55,11 @@
         <dependency>
             <groupId>org.xmlunit</groupId>
             <artifactId>xmlunit-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.ricall.junit5-wiremock</groupId>
+            <artifactId>junit5-wiremock</artifactId>
+            <version>2.0.0</version>
         </dependency>
     </dependencies>
     <dependencyManagement>

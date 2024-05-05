@@ -13,12 +13,14 @@ import com.lol.stats.model.Rank;
 import com.lol.stats.model.SummonerInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -26,6 +28,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SummonerProviderImpl implements SummonerProvider {
 
+    @Value("${api.key}")
+    private String API_KEY;
     private final EUN1RiotClient eun1RiotClient;
     private final SummonerInfoMapper summonerInfoMapper;
     private final RankMapper rankMapper;
@@ -35,14 +39,14 @@ public class SummonerProviderImpl implements SummonerProvider {
     @Override
     public String provideKey() {
         try {
-            String apiKeyFilePath = "x:/key.txt";
+            String apiKeyFilePath = API_KEY;
             Path path = Paths.get(apiKeyFilePath);
             byte[] apiKeyBytes = Files.readAllBytes(path);
             return new String(apiKeyBytes);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.toString());
         }
-        return "INVALID API_KEY";
+        return "CAN'T FETCH API KEY";
     }
 
     @Override
@@ -68,7 +72,7 @@ public class SummonerProviderImpl implements SummonerProvider {
     @Override
     public String getLatestLoLVersion() {
         String[] version = dDragonClient.getLolVersions();
-        return version.length > 0 ? version[0] : null;
+        return version != null ? Arrays.stream(version).findFirst().orElse(null) : null;
     }
 
     @Override

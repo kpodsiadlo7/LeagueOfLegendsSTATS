@@ -19,4 +19,6 @@ europe:
 
 ddragon:
   url: "https://ddragon.leagueoflegends.com/"
-  version: "https://ddragon.leagueoflegends.com/api/versions.json"
+
+api:
+  key: "x:/key.txt"

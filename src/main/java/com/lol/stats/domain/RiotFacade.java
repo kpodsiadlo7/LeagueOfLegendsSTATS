@@ -23,10 +23,11 @@ import static java.lang.Thread.sleep;
 public class RiotFacade {
 
     private final PreviousMatchInfoMapper previousMatchInfoMapper;
+    private final SummonerProvider summonerProvider;
     private final MatchInfoMapper matchInfoMapper;
     private final SummonerMapper summonerMapper;
+    private final ColorProvider colorProvider;
     private final MatchMapper matchMapper;
-    private final SummonerProvider summonerProvider;
 
     public SummonerDto getSummonerInfoByName(final String summonerName) {
         SummonerInfo summonerInfo = getSummonerInfo(summonerName);
@@ -71,6 +72,10 @@ public class RiotFacade {
 
     private ChampionDto getMainChampion(final String puuid) {
         List<ChampionDto> champions = summonerProvider.getChampionsByPuuId(puuid);
+        return getFirstChampionDtoOrElseNull(champions);
+    }
+
+    private static ChampionDto getFirstChampionDtoOrElseNull(List<ChampionDto> champions) {
         return champions == null ? null : champions.stream().findFirst().orElse(null);
     }
 
@@ -81,9 +86,9 @@ public class RiotFacade {
         if (ranks != null && !ranks.isEmpty()) {
             ranks.forEach(rank -> {
                 if ("RANKED_FLEX_SR".equals(rank.getQueueType())) {
-                    flexRankColor.set(setRankColorDependsOnTier(rank.getTier()));
+                    flexRankColor.set(colorProvider.provideColor(rank.getTier()));
                 } else if ("RANKED_SOLO_5x5".equals(rank.getQueueType())) {
-                    soloRankColor.set(setRankColorDependsOnTier(rank.getTier()));
+                    soloRankColor.set(colorProvider.provideColor(rank.getTier()));
                 }
             });
         }
@@ -95,17 +100,17 @@ public class RiotFacade {
         return summonerProvider.getLatestLoLVersion();
     }
 
-    private SummonerInfo getSummonerInfo(String summonerName) {
+    SummonerInfo getSummonerInfo(String summonerName) {
         SummonerInfo summonerInfo = summonerProvider.getSummonerInfo(summonerName);
         if (summonerInfo == null) return new SummonerInfo();
 
         // if the tagline is not null, we must collect the remaining data of the summoner using their puuId
-        // if the tagline is null it's mean we are not looking name using '#'
+        // if the tagline is null it's mean we are not looking for name using '#'
         if (summonerInfo.getTagLine() != null) {
             summonerInfo = updateSummonerInfo(summonerInfo);
         }
 
-        // if name is null it's mean summoner is not found
+        // if name is null it's mean summoner not found
         if (summonerInfo.getName() == null) return new SummonerInfo();
 
         return summonerInfo;
@@ -135,20 +140,6 @@ public class RiotFacade {
         return null;
     }
 
-    private String setRankColorDependsOnTier(final String rank) {
-        return switch (rank.toLowerCase()) {
-            case "gold" -> "#FFD700";
-            case "silver" -> "#C0C0C0";
-            case "platinum" -> "#A9A9A9";
-            case "emerald" -> "#2ecc71";
-            case "diamond" -> "#00CED1";
-            case "bronze" -> "#964B00";
-            case "grandmaster" -> "#3333FF";
-            case "master" -> "#800080";
-            default -> "#363949";
-        };
-    }
-
     public List<String> getSummonerMatchesByNameAndCount(final String puuId, final int count) {
         return summonerProvider.getMatchesByPuuIdAndCount(puuId, count);
     }
@@ -163,22 +154,19 @@ public class RiotFacade {
 
         MatchInfo allInfoAboutMatch = MatchInfo.builder().summoners(new ArrayList<>()).bannedChampions(new ArrayList<>()).build();
 
-        if (!matchInfo.isEmpty() && !matchInfo.get("participants").isEmpty()) {
+        if (isParticipants(matchInfo)) {
             setInfoAboutSummoners(matchInfo, allInfoAboutMatch, summonerInfo);
         }
         return matchInfoMapper.toDto(allInfoAboutMatch);
     }
 
+    private static boolean isParticipants(JsonNode matchInfo) {
+        return !matchInfo.isEmpty() && !matchInfo.get("participants").isEmpty();
+    }
+
     private void setInfoAboutSummoners(JsonNode matchInfo, MatchInfo allInfoAboutMatch, SummonerInfo summonerInfo) {
         for (JsonNode s : matchInfo.get("participants")) {
-            MatchSummoner matchSummoner = setMatchSummoner(s);
-            matchSummoner.setSpellName1(getSpellNameBySpellId(s.get("spell1Id").asText()));
-            matchSummoner.setSpellName2(getSpellNameBySpellId(s.get("spell2Id").asText()));
-
-            allInfoAboutMatch.getSummoners().add(matchSummoner);
-
-            if (s.get("summonerId").asText().equals(summonerInfo.getId()))
-                allInfoAboutMatch.setUserTeam(s.get("teamId").asText());
+            initializeSummonerWithSpellIdAndUserTeam(allInfoAboutMatch, summonerInfo, s);
         }
 
         for (JsonNode champ : matchInfo.get("bannedChampions")) {
@@ -187,13 +175,36 @@ public class RiotFacade {
         allInfoAboutMatch.setGameMode(matchInfo.get("gameMode").asText());
     }
 
+    private void initializeSummonerWithSpellIdAndUserTeam(MatchInfo allInfoAboutMatch, SummonerInfo summonerInfo, JsonNode s) {
+        MatchSummoner matchSummoner = setMatchSummoner(s);
+        matchSummoner.setSpellName1(getSpellNameBySpellId(s.get("spell1Id").asText()));
+        matchSummoner.setSpellName2(getSpellNameBySpellId(s.get("spell2Id").asText()));
+
+        allInfoAboutMatch.getSummoners().add(matchSummoner);
+
+        if (isMatchInfoHasSummonerId(summonerInfo, s))
+            allInfoAboutMatch.setUserTeam(s.get("teamId").asText());
+    }
+
+    private static boolean isMatchInfoHasSummonerId(SummonerInfo summonerInfo, JsonNode s) {
+        return s.get("summonerId").asText().equals(summonerInfo.getId());
+    }
+
     private String checkIfNameIsNotEmpty(final String name, final String puuId) {
         if (!name.isEmpty()) return name;
         log.warn("empty nick");
-        SummonerInfo summonerInfo = summonerProvider.getSummonerFromAccountData(puuId);
+
+        return getNameOrGameName(name,puuId);
+    }
+
+    private String getNameOrGameName(String name, String puuId) {
+        SummonerInfo summonerInfo = getSummonerNameFromAccountData(puuId);
         return summonerInfo == null ? name : summonerInfo.getGameName();
     }
 
+    private SummonerInfo getSummonerNameFromAccountData(String puuId) {
+        return summonerProvider.getSummonerFromAccountData(puuId);
+    }
 
     private Match setRankedSoloRank(List<Rank> ranks) {
         AtomicReference<String> rank = new AtomicReference<>("BRAK RANGI");
@@ -202,7 +213,7 @@ public class RiotFacade {
             ranks.forEach(r -> {
                 if (r.getQueueType().equals("RANKED_SOLO_5x5")) {
                     rank.set(r.getTier());
-                    rankColor.set(setRankColorDependsOnTier(rank.get()));
+                    rankColor.set(colorProvider.provideColor(rank.get()));
                 }
             });
         }
@@ -212,6 +223,10 @@ public class RiotFacade {
     private String getSpellNameBySpellId(String spellId) {
         JsonNode summonerSpells = summonerProvider.getSummonerSpells(getLatestLoLVersion());
 
+        return getSpellNameFromSummonerSpellsOrReturnEmptyString(spellId, summonerSpells);
+    }
+
+    private static String getSpellNameFromSummonerSpellsOrReturnEmptyString(String spellId, JsonNode summonerSpells) {
         for (JsonNode n : summonerSpells.get("data")) {
             if (n.get("key").asText().equals(spellId)) {
                 return n.get("name").asText();
@@ -222,18 +237,30 @@ public class RiotFacade {
 
     private LeagueInfoDto getLeagueInfo(String summonerId) {
         List<LeagueInfoDto> leagueInfoList = summonerProvider.getLeagueInfoListBySummonerId(summonerId);
+        return getLeagueInfoDtoOrReturnNull(leagueInfoList);
+    }
+
+    private static LeagueInfoDto getLeagueInfoDtoOrReturnNull(List<LeagueInfoDto> leagueInfoList) {
         if (leagueInfoList != null && !leagueInfoList.isEmpty()) {
-            return leagueInfoList.stream()
-                    .filter(league -> league.queueType().equals("RANKED_SOLO_5x5"))
-                    .findFirst()
-                    .orElse(null);
+            return getRankedSolo5x5OrReturnNull(leagueInfoList);
         }
         return null;
     }
 
+    private static LeagueInfoDto getRankedSolo5x5OrReturnNull(List<LeagueInfoDto> leagueInfoList) {
+        return leagueInfoList.stream()
+                .filter(league -> league.queueType().equals("RANKED_SOLO_5x5"))
+                .findFirst()
+                .orElse(null);
+    }
+
     public String getRandomSummonerNameFromExistingGame() {
         JsonNode exampleMatch = summonerProvider.getExampleSummonerNameFromExistingGame();
-        if (exampleMatch != null && !exampleMatch.get("gameList").isEmpty()) {
+        return ifExampleMatchHasGameListGetNameAndPuuIdAndCheckName(exampleMatch);
+    }
+
+    private String ifExampleMatchHasGameListGetNameAndPuuIdAndCheckName(JsonNode exampleMatch) {
+        if (isGameList(exampleMatch)) {
             String name = exampleMatch.get("gameList").get(0).get("participants").get(0).get("summonerName").asText();
             String puuId = exampleMatch.get("gameList").get(0).get("participants").get(0).get("puuid").asText();
 
@@ -241,6 +268,10 @@ public class RiotFacade {
             return summonerNameFromExistingGame != null ? summonerNameFromExistingGame : "Brak listy gier. Spróbuj ponownie za chwilę";
         }
         return "Brak listy gier. Spróbuj ponownie za chwilę";
+    }
+
+    private static boolean isGameList(JsonNode exampleMatch) {
+        return exampleMatch != null && !exampleMatch.get("gameList").isEmpty();
     }
 
 
@@ -258,7 +289,7 @@ public class RiotFacade {
         int losses = 0;
         for (var singleMatch : matchesIdList) {
             JsonNode matchJN = getInfoAboutMatchById(singleMatch);
-            if (matchJN.get("info").get("gameMode").asText().equals("CLASSIC")) {
+            if (isGameModeIsClassic(matchJN)) {
                 for (JsonNode m : matchJN.get("info").get("participants")) {
                     ChampMatch champMatch = new ChampMatch();
                     if (m.get("puuid").asText().equals(leagueInfo.getPuuid())) {
@@ -288,7 +319,8 @@ public class RiotFacade {
                 }
             }
             questions++;
-            if (questions >= 15) {
+            int MAX_ATTEMPT = 15;
+            if (questions >= MAX_ATTEMPT) {
                 sleep(1000);
                 questions = 0;
             }
@@ -296,6 +328,10 @@ public class RiotFacade {
         leagueInfo.setWins(wins);
         leagueInfo.setLosses(losses);
         return leagueInfo;
+    }
+
+    private static boolean isGameModeIsClassic(JsonNode matchJN) {
+        return matchJN.get("info").get("gameMode").asText().equals("CLASSIC");
     }
 
     private void setChampMatch(String singleMatch, JsonNode m, ChampMatch champMatch) {
@@ -352,19 +388,21 @@ public class RiotFacade {
         List<PreviousMatchSummoner> summoners = new ArrayList<>();
         PreviousMatchInfo previousMatchInfo = new PreviousMatchInfo();
 
+        return getPreviousMatchInfoDto(matchId, summoners, previousMatchInfo);
+    }
+
+    private PreviousMatchInfoDto getPreviousMatchInfoDto(String matchId, List<PreviousMatchSummoner> summoners, PreviousMatchInfo previousMatchInfo) {
         JsonNode matchInfo = summonerProvider.getInfoAboutMatchById(matchId);
         if (matchInfo == null) return null;
 
         JsonNode info = matchInfo.get("info");
         if (info == null) return null;
 
-        for (var summoner : info.get("participants")) {
-            summoners.add(setPreviousMatchSummoner(summoner));
+        return getPreviousMatchInfoDto(summoners, previousMatchInfo, info, matchInfo);
+    }
 
-            if (previousMatchInfo.getTimeInSeconds() < 1) {
-                previousMatchInfo.setTimeInSeconds(summoner.get("timePlayed").asInt());
-            }
-        }
+    private PreviousMatchInfoDto getPreviousMatchInfoDto(List<PreviousMatchSummoner> summoners, PreviousMatchInfo previousMatchInfo, JsonNode info, JsonNode matchInfo) {
+        ifInfoHasParticipantsSetPreviousMatchSummonerAndCheckTime(summoners, previousMatchInfo, info);
 
         // include banned champions list
         setObjectives(info, previousMatchInfo);
@@ -375,17 +413,42 @@ public class RiotFacade {
         return previousMatchInfoMapper.toDto(previousMatchInfo);
     }
 
+    private void ifInfoHasParticipantsSetPreviousMatchSummonerAndCheckTime(List<PreviousMatchSummoner> summoners, PreviousMatchInfo previousMatchInfo, JsonNode info) {
+        for (var summoner : info.get("participants")) {
+            summoners.add(setPreviousMatchSummoner(summoner));
+            ifPreviousMatchTimeIsLessThan1ThenSetTimeInSecond(previousMatchInfo, summoner);
+        }
+    }
+
+    private static void ifPreviousMatchTimeIsLessThan1ThenSetTimeInSecond(PreviousMatchInfo previousMatchInfo, JsonNode summoner) {
+        if (previousMatchInfo.getTimeInSeconds() < 1) {
+            previousMatchInfo.setTimeInSeconds(summoner.get("timePlayed").asInt());
+        }
+    }
+
     private PreviousMatchSummoner setPreviousMatchSummoner(JsonNode summoner) {
-        // case for playing with bots
-        SummonerInfo summonerInfo = !summoner.get("puuid").asText().equals("BOT") ?
-                summonerProvider.getSummonerByPuuId(summoner.get("puuid").asText()) :
-                SummonerInfo.builder().name("BOT").puuid("BOT").build();
+        SummonerInfo summonerInfo = getSummonerInfoFromPuuIdOrBuildBOTSummonerInfo(summoner);
         List<Rank> ranks = new ArrayList<>();
-        int kda = summoner.get("challenges") != null ? summoner.get("challenges").get("kda").asInt() : 0;
-        if (!summonerInfo.getPuuid().equals("BOT")) ranks = getSummonerRank(summoner.get("summonerId").asText());
+        int kda = getKdaOrZERO(summoner);
+        if (!summonerInfo.getPuuid().equals("BOT"))
+            ranks = getSummonerRank(summoner.get("summonerId").asText());
 
         Match match = setRankedSoloRank(ranks);
         int champIconId = summoner.get("championId").asInt();
+        return buildPreviousMatchForCurrentSummoner(summoner, summonerInfo, match, champIconId, kda);
+    }
+
+    private static int getKdaOrZERO(JsonNode summoner) {
+        return summoner.get("challenges") != null ? summoner.get("challenges").get("kda").asInt() : 0;
+    }
+
+    private SummonerInfo getSummonerInfoFromPuuIdOrBuildBOTSummonerInfo(JsonNode summoner) {
+        return !summoner.get("puuid").asText().equals("BOT") ?
+                summonerProvider.getSummonerByPuuId(summoner.get("puuid").asText()) :
+                SummonerInfo.builder().name("BOT").puuid("BOT").build();
+    }
+
+    private PreviousMatchSummoner buildPreviousMatchForCurrentSummoner(JsonNode summoner, SummonerInfo summonerInfo, Match match, int champIconId, int kda) {
         return PreviousMatchSummoner.builder()
                 .lane(getLane(summoner))
                 .puuId(summonerInfo.getPuuid())
@@ -405,26 +468,34 @@ public class RiotFacade {
 
     private void setObjectives(JsonNode info, PreviousMatchInfo previousMatchInfo) {
         for (var objectives : info.get("teams")) {
-            if (objectives.has("objectives")) {
-                var objective = objectives.get("objectives");
-                String baronKills = objective.get("baron").get("kills").asText();
-                String championKills = objective.get("champion").get("kills").asText();
-                String dragonKills = objective.get("dragon").get("kills").asText();
-                int teamId = objectives.get("teamId").asInt();
-
-                previousMatchInfo.getTeamObjective().add(new TeamObjectiveDto(championKills, baronKills, dragonKills, teamId));
-            }
+            addObjectivesToPreviousMatchInfoIfPresent(previousMatchInfo, objectives);
             setBannedList(objectives, previousMatchInfo);
+        }
+    }
+
+    private static void addObjectivesToPreviousMatchInfoIfPresent(PreviousMatchInfo previousMatchInfo, JsonNode objectives) {
+        if (objectives.has("objectives")) {
+            var objective = objectives.get("objectives");
+            String baronKills = objective.get("baron").get("kills").asText();
+            String championKills = objective.get("champion").get("kills").asText();
+            String dragonKills = objective.get("dragon").get("kills").asText();
+            int teamId = objectives.get("teamId").asInt();
+
+            previousMatchInfo.getTeamObjective().add(new TeamObjectiveDto(championKills, baronKills, dragonKills, teamId));
         }
     }
 
     private void setBannedList(JsonNode objectives, PreviousMatchInfo previousMatchInfo) {
         if (objectives.has("bans")) {
-            var bans = objectives.get("bans");
-            for (var bannedChamp : bans) {
-                previousMatchInfo.getBannedChampions()
-                        .add(new BannedChampion(bannedChamp.get("championId").asText()));
-            }
+            fillBannedChampionsListIfPresent(objectives, previousMatchInfo);
+        }
+    }
+
+    private static void fillBannedChampionsListIfPresent(JsonNode objectives, PreviousMatchInfo previousMatchInfo) {
+        var bans = objectives.get("bans");
+        for (var bannedChamp : bans) {
+            previousMatchInfo.getBannedChampions()
+                    .add(new BannedChampion(bannedChamp.get("championId").asText()));
         }
     }
 
