@@ -17,14 +17,21 @@ revealing all participants of that particular match.
   ratios, damage dealt, lane played, and match outcome.
 - Detailed Match Information: Click on any match to get detailed information about the match, including all
   participants.
+  
+![Profile search image](img/profile%20search.png)
 
 ## Additional Features
 
 - Active Match Search: Find information about an ongoing match, including ranks of all players, banned champions,
   selected
   spells, and more.
+
+![Profile search image](img/active%20match.png)
+
 - Recent Games Lookup: For each player individually, view their last 3 ranked games out of their last 20 games, with the
   same detailed information available for each match.
+
+![Profile search image](img/recent%20match.png)
 
 ## Technologies Used
 
@@ -36,8 +43,8 @@ revealing all participants of that particular match.
 
 #### Backend:
 
-- Java 17
-- Spring 3
+- Java 
+- Spring 
 
 ## How to Use
 
